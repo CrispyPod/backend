@@ -25,3 +25,6 @@ Feed/
 
 # Env file
 .env
+
+# Upload Files
+UploadFile/
