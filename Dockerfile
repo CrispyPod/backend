@@ -12,3 +12,7 @@ COPY rssfeed ./rssfeed
 COPY tools ./tools
 COPY schedule ./schedule
 RUN go build -o /bin/crispypod
+
+FROM alpine:latest
+COPY --from=0 /bin/crispypod /bin/crispypod
+CMD [ "crispypod" ]
