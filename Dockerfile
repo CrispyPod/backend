@@ -1,7 +1,6 @@
 FROM golang:1.21-alpine
 WORKDIR /src
 COPY go.mod go.sum  ./
-RUN go mod download -x
 COPY main.go  ./
 COPY controllers ./controllers
 COPY db ./db
@@ -14,5 +13,7 @@ COPY schedule ./schedule
 RUN go build -o /bin/crispypod
 
 FROM alpine:latest
+WORKDIR /crispypod
+VOLUME [ "/crispypod/UploadFile" ]
 COPY --from=0 /bin/crispypod /bin/crispypod
 CMD [ "crispypod" ]
