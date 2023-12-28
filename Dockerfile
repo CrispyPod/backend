@@ -16,4 +16,5 @@ FROM alpine:latest
 WORKDIR /crispypod
 VOLUME [ "/crispypod/UploadFile" ]
 COPY --from=0 /bin/crispypod /bin/crispypod
-CMD [ "GIN_MODE=release","crispypod" ]
+ENV GIN_MODE=release
+CMD [ "crispypod" ]
