@@ -239,7 +239,11 @@ func (r *queryResolver) Episodes(ctx context.Context, pagination model.Paginatio
 func (r *queryResolver) Episode(ctx context.Context, id string) (*model.Episode, error) {
 	userName := helpers.JWTFromContext(ctx)
 	var dbEpisode models.Episode
-	if err := db.DB.Find(&dbEpisode, models.Episode{ID: uuid.Must(uuid.Parse(id))}).Error; err != nil {
+	epId, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid episode id")
+	}
+	if err := db.DB.Find(&dbEpisode, models.Episode{ID: uuid.Must(epId, err)}).Error; err != nil {
 		return nil, errors.New("episode not found")
 	}
 	if len(userName) == 0 && dbEpisode.EpisodeStatus == models.EpisodeStatus_Draft {
