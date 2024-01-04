@@ -12,6 +12,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
 )
@@ -22,6 +23,7 @@ func main() {
 
 	r := gin.Default()
 	r.Use(helpers.JWTMiddleWare())
+	r.Use(cors.Default())
 
 	if gin.Mode() == "debug" {
 		pH := playground.Handler("GraphQL", "/graphql")
