@@ -38,8 +38,16 @@ func AudioFileUpload(c *gin.Context) {
 	c.Bind(&uploadStruct)
 
 	var dbEpisode models.Episode
-	if err := db.DB.Model(models.Episode{ID: uuid.Must(uuid.Parse(uploadStruct.EpisodeId))}).Find(&dbEpisode).Error; err != nil {
+	var epId uuid.UUID
+	var err error
+	if epId, err = uuid.Parse(uploadStruct.EpisodeId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "episode not found"})
+		return
+	}
+
+	if err := db.DB.Model(models.Episode{ID: epId}).Find(&dbEpisode).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "episode not found"})
+		return
 	}
 
 	file, err := c.FormFile("file")
