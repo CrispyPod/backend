@@ -77,12 +77,14 @@ type SiteConfig struct {
 	SiteName        string `json:"siteName"`
 	SiteDescription string `json:"siteDescription"`
 	SiteURL         string `json:"siteUrl"`
+	SetupComplete   bool   `json:"setupComplete"`
 }
 
 type SiteConfigInput struct {
-	SiteName        string `json:"siteName"`
-	SiteDescription string `json:"siteDescription"`
-	SiteURL         string `json:"siteUrl"`
+	SiteName        *string `json:"siteName,omitempty"`
+	SiteDescription *string `json:"siteDescription,omitempty"`
+	SiteURL         *string `json:"siteUrl,omitempty"`
+	SetupComplete   *bool   `json:"setupComplete,omitempty"`
 }
 
 type User struct {

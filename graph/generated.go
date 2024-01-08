@@ -24,6 +24,7 @@ import (
 // NewExecutableSchema creates an ExecutableSchema from the ResolverRoot interface.
 func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 	return &executableSchema{
+		schema:     cfg.Schema,
 		resolvers:  cfg.Resolvers,
 		directives: cfg.Directives,
 		complexity: cfg.Complexity,
@@ -31,6 +32,7 @@ func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 }
 
 type Config struct {
+	Schema     *ast.Schema
 	Resolvers  ResolverRoot
 	Directives DirectiveRoot
 	Complexity ComplexityRoot
@@ -103,6 +105,7 @@ type ComplexityRoot struct {
 
 	SiteConfig struct {
 		ID              func(childComplexity int) int
+		SetupComplete   func(childComplexity int) int
 		SiteDescription func(childComplexity int) int
 		SiteName        func(childComplexity int) int
 		SiteURL         func(childComplexity int) int
@@ -142,12 +145,16 @@ type QueryResolver interface {
 }
 
 type executableSchema struct {
+	schema     *ast.Schema
 	resolvers  ResolverRoot
 	directives DirectiveRoot
 	complexity ComplexityRoot
 }
 
 func (e *executableSchema) Schema() *ast.Schema {
+	if e.schema != nil {
+		return e.schema
+	}
 	return parsedSchema
 }
 
@@ -432,6 +439,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SiteConfig.ID(childComplexity), true
 
+	case "SiteConfig.setupComplete":
+		if e.complexity.SiteConfig.SetupComplete == nil {
+			break
+		}
+
+		return e.complexity.SiteConfig.SetupComplete(childComplexity), true
+
 	case "SiteConfig.siteDescription":
 		if e.complexity.SiteConfig.SiteDescription == nil {
 			break
@@ -616,14 +630,14 @@ func (ec *executionContext) introspectSchema() (*introspection.Schema, error) {
 	if ec.DisableIntrospection {
 		return nil, errors.New("introspection disabled")
 	}
-	return introspection.WrapSchema(parsedSchema), nil
+	return introspection.WrapSchema(ec.Schema()), nil
 }
 
 func (ec *executionContext) introspectType(name string) (*introspection.Type, error) {
 	if ec.DisableIntrospection {
 		return nil, errors.New("introspection disabled")
 	}
-	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
+	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
 //go:embed "schema.graphqls"
@@ -652,7 +666,7 @@ func (ec *executionContext) field_Mutation_createEpisode_args(ctx context.Contex
 	var arg0 *model.NewEpisode
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalONewEpisode2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐNewEpisode(ctx, tmp)
+		arg0, err = ec.unmarshalONewEpisode2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐNewEpisode(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -691,7 +705,7 @@ func (ec *executionContext) field_Mutation_modifyEpisode_args(ctx context.Contex
 	var arg1 *model.ModifyEpisodeInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalOModifyEpisodeInput2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐModifyEpisodeInput(ctx, tmp)
+		arg1, err = ec.unmarshalOModifyEpisodeInput2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐModifyEpisodeInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -706,7 +720,7 @@ func (ec *executionContext) field_Mutation_modifyMe_args(ctx context.Context, ra
 	var arg0 model.UserInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUserInput2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUserInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUserInput2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -721,7 +735,7 @@ func (ec *executionContext) field_Mutation_modifySiteConfig_args(ctx context.Con
 	var arg0 *model.SiteConfigInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOSiteConfigInput2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐSiteConfigInput(ctx, tmp)
+		arg0, err = ec.unmarshalOSiteConfigInput2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐSiteConfigInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -766,7 +780,7 @@ func (ec *executionContext) field_Query_episodes_args(ctx context.Context, rawAr
 	var arg0 model.Pagination
 	if tmp, ok := rawArgs["pagination"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
-		arg0, err = ec.unmarshalNPagination2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐPagination(ctx, tmp)
+		arg0, err = ec.unmarshalNPagination2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐPagination(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -781,7 +795,7 @@ func (ec *executionContext) field_Query_login_args(ctx context.Context, rawArgs 
 	var arg0 model.Credential
 	if tmp, ok := rawArgs["credential"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credential"))
-		arg0, err = ec.unmarshalNCredential2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐCredential(ctx, tmp)
+		arg0, err = ec.unmarshalNCredential2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐCredential(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -796,7 +810,7 @@ func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs 
 	var arg0 model.Pagination
 	if tmp, ok := rawArgs["pagination"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
-		arg0, err = ec.unmarshalNPagination2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐPagination(ctx, tmp)
+		arg0, err = ec.unmarshalNPagination2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐPagination(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1422,7 +1436,7 @@ func (ec *executionContext) _Episode_user(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Episode_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1480,7 +1494,7 @@ func (ec *executionContext) _EpisodesResult_items(ctx context.Context, field gra
 	}
 	res := resTmp.([]*model.Episode)
 	fc.Result = res
-	return ec.marshalNEpisode2ᚕᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisodeᚄ(ctx, field.Selections, res)
+	return ec.marshalNEpisode2ᚕᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisodeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_EpisodesResult_items(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1591,7 +1605,7 @@ func (ec *executionContext) _EpisodesResult_pageInfo(ctx context.Context, field 
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalOPageInfo2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalOPageInfo2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_EpisodesResult_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1685,7 +1699,7 @@ func (ec *executionContext) _Mutation_createEpisode(ctx context.Context, field g
 	}
 	res := resTmp.(*model.Episode)
 	fc.Result = res
-	return ec.marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisode(ctx, field.Selections, res)
+	return ec.marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisode(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createEpisode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1766,7 +1780,7 @@ func (ec *executionContext) _Mutation_modifyEpisode(ctx context.Context, field g
 	}
 	res := resTmp.(*model.Episode)
 	fc.Result = res
-	return ec.marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisode(ctx, field.Selections, res)
+	return ec.marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisode(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_modifyEpisode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1847,7 +1861,7 @@ func (ec *executionContext) _Mutation_modifySiteConfig(ctx context.Context, fiel
 	}
 	res := resTmp.(*model.SiteConfig)
 	fc.Result = res
-	return ec.marshalNSiteConfig2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐSiteConfig(ctx, field.Selections, res)
+	return ec.marshalNSiteConfig2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐSiteConfig(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_modifySiteConfig(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1866,6 +1880,8 @@ func (ec *executionContext) fieldContext_Mutation_modifySiteConfig(ctx context.C
 				return ec.fieldContext_SiteConfig_siteDescription(ctx, field)
 			case "siteUrl":
 				return ec.fieldContext_SiteConfig_siteUrl(ctx, field)
+			case "setupComplete":
+				return ec.fieldContext_SiteConfig_setupComplete(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SiteConfig", field.Name)
 		},
@@ -1912,7 +1928,7 @@ func (ec *executionContext) _Mutation_modifyMe(ctx context.Context, field graphq
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_modifyMe(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1981,7 +1997,7 @@ func (ec *executionContext) _Mutation_deleteEpisode(ctx context.Context, field g
 	}
 	res := resTmp.(*model.DeletionResult)
 	fc.Result = res
-	return ec.marshalNDeletionResult2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐDeletionResult(ctx, field.Selections, res)
+	return ec.marshalNDeletionResult2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐDeletionResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteEpisode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2128,7 +2144,7 @@ func (ec *executionContext) _Query_episodes(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.EpisodesResult)
 	fc.Result = res
-	return ec.marshalNEpisodesResult2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisodesResult(ctx, field.Selections, res)
+	return ec.marshalNEpisodesResult2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisodesResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_episodes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2191,7 +2207,7 @@ func (ec *executionContext) _Query_episode(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*model.Episode)
 	fc.Result = res
-	return ec.marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisode(ctx, field.Selections, res)
+	return ec.marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisode(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_episode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2272,7 +2288,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*model.UsersResult)
 	fc.Result = res
-	return ec.marshalNUsersResult2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUsersResult(ctx, field.Selections, res)
+	return ec.marshalNUsersResult2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUsersResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2335,7 +2351,7 @@ func (ec *executionContext) _Query_login(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*model.LoginData)
 	fc.Result = res
-	return ec.marshalNLoginData2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐLoginData(ctx, field.Selections, res)
+	return ec.marshalNLoginData2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐLoginData(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2394,7 +2410,7 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2452,7 +2468,7 @@ func (ec *executionContext) _Query_siteConfig(ctx context.Context, field graphql
 	}
 	res := resTmp.(*model.SiteConfig)
 	fc.Result = res
-	return ec.marshalNSiteConfig2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐSiteConfig(ctx, field.Selections, res)
+	return ec.marshalNSiteConfig2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐSiteConfig(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_siteConfig(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2471,6 +2487,8 @@ func (ec *executionContext) fieldContext_Query_siteConfig(ctx context.Context, f
 				return ec.fieldContext_SiteConfig_siteDescription(ctx, field)
 			case "siteUrl":
 				return ec.fieldContext_SiteConfig_siteUrl(ctx, field)
+			case "setupComplete":
+				return ec.fieldContext_SiteConfig_setupComplete(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SiteConfig", field.Name)
 		},
@@ -2506,7 +2524,7 @@ func (ec *executionContext) _Query_dashboardInfo(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.DashboardInfo)
 	fc.Result = res
-	return ec.marshalNDashboardInfo2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐDashboardInfo(ctx, field.Selections, res)
+	return ec.marshalNDashboardInfo2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐDashboardInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_dashboardInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2831,6 +2849,50 @@ func (ec *executionContext) fieldContext_SiteConfig_siteUrl(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _SiteConfig_setupComplete(ctx context.Context, field graphql.CollectedField, obj *model.SiteConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SiteConfig_setupComplete(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SetupComplete, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SiteConfig_setupComplete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SiteConfig",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
@@ -3123,7 +3185,7 @@ func (ec *executionContext) _UsersResult_items(ctx context.Context, field graphq
 	}
 	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UsersResult_items(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3222,7 +3284,7 @@ func (ec *executionContext) _UsersResult_pageInfo(ctx context.Context, field gra
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalOPageInfo2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalOPageInfo2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UsersResult_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5032,8 +5094,6 @@ func (ec *executionContext) unmarshalInputCredential(ctx context.Context, obj in
 		}
 		switch k {
 		case "userName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userName"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -5041,8 +5101,6 @@ func (ec *executionContext) unmarshalInputCredential(ctx context.Context, obj in
 			}
 			it.UserName = data
 		case "password":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -5070,8 +5128,6 @@ func (ec *executionContext) unmarshalInputModifyEpisodeInput(ctx context.Context
 		}
 		switch k {
 		case "title":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5079,8 +5135,6 @@ func (ec *executionContext) unmarshalInputModifyEpisodeInput(ctx context.Context
 			}
 			it.Title = data
 		case "description":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5088,8 +5142,6 @@ func (ec *executionContext) unmarshalInputModifyEpisodeInput(ctx context.Context
 			}
 			it.Description = data
 		case "episodeStatus":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("episodeStatus"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -5097,8 +5149,6 @@ func (ec *executionContext) unmarshalInputModifyEpisodeInput(ctx context.Context
 			}
 			it.EpisodeStatus = data
 		case "audioFileName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audioFileName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5106,8 +5156,6 @@ func (ec *executionContext) unmarshalInputModifyEpisodeInput(ctx context.Context
 			}
 			it.AudioFileName = data
 		case "audioFileUploadName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audioFileUploadName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5115,8 +5163,6 @@ func (ec *executionContext) unmarshalInputModifyEpisodeInput(ctx context.Context
 			}
 			it.AudioFileUploadName = data
 		case "audioFileDuration":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audioFileDuration"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -5124,8 +5170,6 @@ func (ec *executionContext) unmarshalInputModifyEpisodeInput(ctx context.Context
 			}
 			it.AudioFileDuration = data
 		case "thumbnailFileName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("thumbnailFileName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5133,8 +5177,6 @@ func (ec *executionContext) unmarshalInputModifyEpisodeInput(ctx context.Context
 			}
 			it.ThumbnailFileName = data
 		case "thumbnailFileUploadName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("thumbnailFileUploadName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5162,8 +5204,6 @@ func (ec *executionContext) unmarshalInputNewEpisode(ctx context.Context, obj in
 		}
 		switch k {
 		case "title":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -5171,8 +5211,6 @@ func (ec *executionContext) unmarshalInputNewEpisode(ctx context.Context, obj in
 			}
 			it.Title = data
 		case "description":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -5180,8 +5218,6 @@ func (ec *executionContext) unmarshalInputNewEpisode(ctx context.Context, obj in
 			}
 			it.Description = data
 		case "episodeStatus":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("episodeStatus"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -5189,8 +5225,6 @@ func (ec *executionContext) unmarshalInputNewEpisode(ctx context.Context, obj in
 			}
 			it.EpisodeStatus = data
 		case "audioFileName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audioFileName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5198,8 +5232,6 @@ func (ec *executionContext) unmarshalInputNewEpisode(ctx context.Context, obj in
 			}
 			it.AudioFileName = data
 		case "audioFileUploadName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audioFileUploadName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5207,8 +5239,6 @@ func (ec *executionContext) unmarshalInputNewEpisode(ctx context.Context, obj in
 			}
 			it.AudioFileUploadName = data
 		case "audioFileDuration":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audioFileDuration"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -5216,8 +5246,6 @@ func (ec *executionContext) unmarshalInputNewEpisode(ctx context.Context, obj in
 			}
 			it.AudioFileDuration = data
 		case "thumbnailFileName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("thumbnailFileName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5225,8 +5253,6 @@ func (ec *executionContext) unmarshalInputNewEpisode(ctx context.Context, obj in
 			}
 			it.ThumbnailFileName = data
 		case "thumbnailFileUploadName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("thumbnailFileUploadName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5254,8 +5280,6 @@ func (ec *executionContext) unmarshalInputPagination(ctx context.Context, obj in
 		}
 		switch k {
 		case "pageIndex":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageIndex"))
 			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
@@ -5263,8 +5287,6 @@ func (ec *executionContext) unmarshalInputPagination(ctx context.Context, obj in
 			}
 			it.PageIndex = data
 		case "perPage":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("perPage"))
 			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
@@ -5284,7 +5306,7 @@ func (ec *executionContext) unmarshalInputSiteConfigInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"siteName", "siteDescription", "siteUrl"}
+	fieldsInOrder := [...]string{"siteName", "siteDescription", "siteUrl", "setupComplete"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5292,32 +5314,33 @@ func (ec *executionContext) unmarshalInputSiteConfigInput(ctx context.Context, o
 		}
 		switch k {
 		case "siteName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("siteName"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SiteName = data
 		case "siteDescription":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("siteDescription"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SiteDescription = data
 		case "siteUrl":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("siteUrl"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SiteURL = data
+		case "setupComplete":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("setupComplete"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SetupComplete = data
 		}
 	}
 
@@ -5339,8 +5362,6 @@ func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj int
 		}
 		switch k {
 		case "email":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -5348,8 +5369,6 @@ func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj int
 			}
 			it.Email = data
 		case "userName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userName"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -5357,8 +5376,6 @@ func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj int
 			}
 			it.UserName = data
 		case "displayName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -5366,8 +5383,6 @@ func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj int
 			}
 			it.DisplayName = data
 		case "password":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -5980,6 +5995,11 @@ func (ec *executionContext) _SiteConfig(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "setupComplete":
+			out.Values[i] = ec._SiteConfig_setupComplete(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6454,16 +6474,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNCredential2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐCredential(ctx context.Context, v interface{}) (model.Credential, error) {
+func (ec *executionContext) unmarshalNCredential2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐCredential(ctx context.Context, v interface{}) (model.Credential, error) {
 	res, err := ec.unmarshalInputCredential(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDashboardInfo2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐDashboardInfo(ctx context.Context, sel ast.SelectionSet, v model.DashboardInfo) graphql.Marshaler {
+func (ec *executionContext) marshalNDashboardInfo2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐDashboardInfo(ctx context.Context, sel ast.SelectionSet, v model.DashboardInfo) graphql.Marshaler {
 	return ec._DashboardInfo(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDashboardInfo2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐDashboardInfo(ctx context.Context, sel ast.SelectionSet, v *model.DashboardInfo) graphql.Marshaler {
+func (ec *executionContext) marshalNDashboardInfo2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐDashboardInfo(ctx context.Context, sel ast.SelectionSet, v *model.DashboardInfo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6473,11 +6493,11 @@ func (ec *executionContext) marshalNDashboardInfo2ᚖcrispypodᚗcomᚋcrispypod
 	return ec._DashboardInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNDeletionResult2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐDeletionResult(ctx context.Context, sel ast.SelectionSet, v model.DeletionResult) graphql.Marshaler {
+func (ec *executionContext) marshalNDeletionResult2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐDeletionResult(ctx context.Context, sel ast.SelectionSet, v model.DeletionResult) graphql.Marshaler {
 	return ec._DeletionResult(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDeletionResult2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐDeletionResult(ctx context.Context, sel ast.SelectionSet, v *model.DeletionResult) graphql.Marshaler {
+func (ec *executionContext) marshalNDeletionResult2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐDeletionResult(ctx context.Context, sel ast.SelectionSet, v *model.DeletionResult) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6487,11 +6507,11 @@ func (ec *executionContext) marshalNDeletionResult2ᚖcrispypodᚗcomᚋcrispypo
 	return ec._DeletionResult(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNEpisode2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisode(ctx context.Context, sel ast.SelectionSet, v model.Episode) graphql.Marshaler {
+func (ec *executionContext) marshalNEpisode2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisode(ctx context.Context, sel ast.SelectionSet, v model.Episode) graphql.Marshaler {
 	return ec._Episode(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEpisode2ᚕᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisodeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Episode) graphql.Marshaler {
+func (ec *executionContext) marshalNEpisode2ᚕᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisodeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Episode) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -6515,7 +6535,7 @@ func (ec *executionContext) marshalNEpisode2ᚕᚖcrispypodᚗcomᚋcrispypodᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisode(ctx, sel, v[i])
+			ret[i] = ec.marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisode(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -6535,7 +6555,7 @@ func (ec *executionContext) marshalNEpisode2ᚕᚖcrispypodᚗcomᚋcrispypodᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisode(ctx context.Context, sel ast.SelectionSet, v *model.Episode) graphql.Marshaler {
+func (ec *executionContext) marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisode(ctx context.Context, sel ast.SelectionSet, v *model.Episode) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6545,11 +6565,11 @@ func (ec *executionContext) marshalNEpisode2ᚖcrispypodᚗcomᚋcrispypodᚋgra
 	return ec._Episode(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNEpisodesResult2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisodesResult(ctx context.Context, sel ast.SelectionSet, v model.EpisodesResult) graphql.Marshaler {
+func (ec *executionContext) marshalNEpisodesResult2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisodesResult(ctx context.Context, sel ast.SelectionSet, v model.EpisodesResult) graphql.Marshaler {
 	return ec._EpisodesResult(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEpisodesResult2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐEpisodesResult(ctx context.Context, sel ast.SelectionSet, v *model.EpisodesResult) graphql.Marshaler {
+func (ec *executionContext) marshalNEpisodesResult2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐEpisodesResult(ctx context.Context, sel ast.SelectionSet, v *model.EpisodesResult) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6589,11 +6609,11 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNLoginData2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐLoginData(ctx context.Context, sel ast.SelectionSet, v model.LoginData) graphql.Marshaler {
+func (ec *executionContext) marshalNLoginData2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐLoginData(ctx context.Context, sel ast.SelectionSet, v model.LoginData) graphql.Marshaler {
 	return ec._LoginData(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNLoginData2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐLoginData(ctx context.Context, sel ast.SelectionSet, v *model.LoginData) graphql.Marshaler {
+func (ec *executionContext) marshalNLoginData2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐLoginData(ctx context.Context, sel ast.SelectionSet, v *model.LoginData) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6603,16 +6623,16 @@ func (ec *executionContext) marshalNLoginData2ᚖcrispypodᚗcomᚋcrispypodᚋg
 	return ec._LoginData(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNPagination2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐPagination(ctx context.Context, v interface{}) (model.Pagination, error) {
+func (ec *executionContext) unmarshalNPagination2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐPagination(ctx context.Context, v interface{}) (model.Pagination, error) {
 	res, err := ec.unmarshalInputPagination(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNSiteConfig2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐSiteConfig(ctx context.Context, sel ast.SelectionSet, v model.SiteConfig) graphql.Marshaler {
+func (ec *executionContext) marshalNSiteConfig2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐSiteConfig(ctx context.Context, sel ast.SelectionSet, v model.SiteConfig) graphql.Marshaler {
 	return ec._SiteConfig(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSiteConfig2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐSiteConfig(ctx context.Context, sel ast.SelectionSet, v *model.SiteConfig) graphql.Marshaler {
+func (ec *executionContext) marshalNSiteConfig2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐSiteConfig(ctx context.Context, sel ast.SelectionSet, v *model.SiteConfig) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6637,11 +6657,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -6665,7 +6685,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖcrispypodᚗcomᚋcrispypodᚋgra
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOUser2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalOUser2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -6679,7 +6699,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖcrispypodᚗcomᚋcrispypodᚋgra
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6689,16 +6709,16 @@ func (ec *executionContext) marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚋgraph�
 	return ec._User(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNUserInput2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUserInput(ctx context.Context, v interface{}) (model.UserInput, error) {
+func (ec *executionContext) unmarshalNUserInput2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUserInput(ctx context.Context, v interface{}) (model.UserInput, error) {
 	res, err := ec.unmarshalInputUserInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUsersResult2crispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUsersResult(ctx context.Context, sel ast.SelectionSet, v model.UsersResult) graphql.Marshaler {
+func (ec *executionContext) marshalNUsersResult2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUsersResult(ctx context.Context, sel ast.SelectionSet, v model.UsersResult) graphql.Marshaler {
 	return ec._UsersResult(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUsersResult2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUsersResult(ctx context.Context, sel ast.SelectionSet, v *model.UsersResult) graphql.Marshaler {
+func (ec *executionContext) marshalNUsersResult2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUsersResult(ctx context.Context, sel ast.SelectionSet, v *model.UsersResult) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7003,7 +7023,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOModifyEpisodeInput2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐModifyEpisodeInput(ctx context.Context, v interface{}) (*model.ModifyEpisodeInput, error) {
+func (ec *executionContext) unmarshalOModifyEpisodeInput2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐModifyEpisodeInput(ctx context.Context, v interface{}) (*model.ModifyEpisodeInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7011,7 +7031,7 @@ func (ec *executionContext) unmarshalOModifyEpisodeInput2ᚖcrispypodᚗcomᚋcr
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalONewEpisode2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐNewEpisode(ctx context.Context, v interface{}) (*model.NewEpisode, error) {
+func (ec *executionContext) unmarshalONewEpisode2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐNewEpisode(ctx context.Context, v interface{}) (*model.NewEpisode, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7019,14 +7039,14 @@ func (ec *executionContext) unmarshalONewEpisode2ᚖcrispypodᚗcomᚋcrispypod�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOPageInfo2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+func (ec *executionContext) marshalOPageInfo2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._PageInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOSiteConfigInput2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐSiteConfigInput(ctx context.Context, v interface{}) (*model.SiteConfigInput, error) {
+func (ec *executionContext) unmarshalOSiteConfigInput2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐSiteConfigInput(ctx context.Context, v interface{}) (*model.SiteConfigInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7050,7 +7070,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOUser2ᚖcrispypodᚗcomᚋcrispypodᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

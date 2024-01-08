@@ -56,6 +56,7 @@ func ConnectDatabase() {
 			SiteName:        "CrispyPod",
 			SiteDescription: "Super awesome podcast!",
 			SiteUrl:         "https://crispypod.com",
+			SetupComplete:   false,
 		}
 		db.Create(&siteConfig)
 	}

@@ -10,13 +10,25 @@ type SiteConfig struct {
 	SiteName        string
 	SiteDescription string
 	SiteUrl         string
+	SetupComplete   bool `gorm:"default:false"`
 }
 
-func (siteConfig *SiteConfig) ToGQLSiteConfig() *model.SiteConfig {
-	return &model.SiteConfig{
-		ID:              siteConfig.ID.String(),
-		SiteName:        siteConfig.SiteName,
-		SiteDescription: siteConfig.SiteDescription,
-		SiteURL:         siteConfig.SiteUrl,
+func (siteConfig *SiteConfig) ToGQLSiteConfig(includeSetupComplete bool) *model.SiteConfig {
+	if includeSetupComplete {
+		return &model.SiteConfig{
+			ID:              siteConfig.ID.String(),
+			SiteName:        siteConfig.SiteName,
+			SiteDescription: siteConfig.SiteDescription,
+			SiteURL:         siteConfig.SiteUrl,
+			SetupComplete:   siteConfig.SetupComplete,
+		}
+	} else {
+		return &model.SiteConfig{
+			ID:              siteConfig.ID.String(),
+			SiteName:        siteConfig.SiteName,
+			SiteDescription: siteConfig.SiteDescription,
+			SiteURL:         siteConfig.SiteUrl,
+		}
 	}
+
 }

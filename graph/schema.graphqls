@@ -3,124 +3,126 @@
 # https://gqlgen.com/getting-started/
 
 type Episode {
-	id: ID!
-	title: String!
-	createTime: Int!
-	description: String!
-	episodeStatus: Int
-	publishTime: Int
-	thumbnailFileName: String
-	thumbnailUploadName: String
-	audioFileName: String
-	audioFileUploadName: String
-	audioFileDuration: Int
-	user: User!
+  id: ID!
+  title: String!
+  createTime: Int!
+  description: String!
+  episodeStatus: Int
+  publishTime: Int
+  thumbnailFileName: String
+  thumbnailUploadName: String
+  audioFileName: String
+  audioFileUploadName: String
+  audioFileDuration: Int
+  user: User!
 }
 
 type User {
-	id: ID!
-	createTime: Int!
-	email: String!
-	userName: String!
-	displayName: String!
-	isAdmin: Boolean!
+  id: ID!
+  createTime: Int!
+  email: String!
+  userName: String!
+  displayName: String!
+  isAdmin: Boolean!
 }
 
 type SiteConfig {
-	id: ID!
-	siteName: String!
-	siteDescription: String!
-	siteUrl: String!
+  id: ID!
+  siteName: String!
+  siteDescription: String!
+  siteUrl: String!
+  setupComplete: Boolean!
 }
 
 input Pagination {
-	pageIndex: Int!
-	perPage: Int!
+  pageIndex: Int!
+  perPage: Int!
 }
 
 input Credential {
-	userName: String!
-	password: String!
+  userName: String!
+  password: String!
 }
 
 type LoginData {
-	token: String!
+  token: String!
 }
 
 type PageInfo {
-	hasNextPage: Boolean!
-	hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
 }
 
 type EpisodesResult {
-	items: [Episode!]!
-	totalCount: Int!
-	pageInfo: PageInfo
+  items: [Episode!]!
+  totalCount: Int!
+  pageInfo: PageInfo
 }
 
 type UsersResult {
-	items: [User]!
-	totalCount: Int!
-	pageInfo: PageInfo
+  items: [User]!
+  totalCount: Int!
+  pageInfo: PageInfo
 }
 
 type DashboardInfo {
-	episodeCount: Int!
+  episodeCount: Int!
 }
 
 type Query {
-	episodes(pagination: Pagination!): EpisodesResult!
-	episode(id: ID!): Episode!
-	users(pagination: Pagination!): UsersResult!
-	login(credential: Credential!): LoginData!
-	me: User!
-	siteConfig: SiteConfig!
-	dashboardInfo: DashboardInfo!
+  episodes(pagination: Pagination!): EpisodesResult!
+  episode(id: ID!): Episode!
+  users(pagination: Pagination!): UsersResult!
+  login(credential: Credential!): LoginData!
+  me: User!
+  siteConfig: SiteConfig!
+  dashboardInfo: DashboardInfo!
 }
 
 input NewEpisode {
-	title: String!
-	description: String!
-	episodeStatus: Int
-	audioFileName: String
-	audioFileUploadName: String
-	audioFileDuration: Int
-	thumbnailFileName: String
-	thumbnailFileUploadName: String
+  title: String!
+  description: String!
+  episodeStatus: Int
+  audioFileName: String
+  audioFileUploadName: String
+  audioFileDuration: Int
+  thumbnailFileName: String
+  thumbnailFileUploadName: String
 }
 
-input ModifyEpisodeInput{
-	title: String
-	description: String
-	episodeStatus: Int
-	audioFileName: String
-	audioFileUploadName: String
-	audioFileDuration: Int
-	thumbnailFileName: String
-	thumbnailFileUploadName: String
+input ModifyEpisodeInput {
+  title: String
+  description: String
+  episodeStatus: Int
+  audioFileName: String
+  audioFileUploadName: String
+  audioFileDuration: Int
+  thumbnailFileName: String
+  thumbnailFileUploadName: String
 }
 
 input SiteConfigInput {
-	siteName: String!
-	siteDescription: String!
-	siteUrl: String!
+  siteName: String
+  siteDescription: String
+  siteUrl: String
+  setupComplete: Boolean
 }
 
 input UserInput {
-	email: String!
-	userName: String!
-	displayName: String!
-	password: String
+  email: String!
+  userName: String!
+  displayName: String!
+  password: String
 }
 
-type DeletionResult{
-	result:Boolean!
+type DeletionResult {
+  result: Boolean!
 }
 
 type Mutation {
-	createEpisode(input: NewEpisode): Episode!
-	modifyEpisode(id: ID!, input: ModifyEpisodeInput): Episode!
-	modifySiteConfig(input: SiteConfigInput): SiteConfig!
-	modifyMe(input: UserInput!): User!
-	deleteEpisode(id: ID!): DeletionResult!
+  createEpisode(input: NewEpisode): Episode!
+  modifyEpisode(id: ID!, input: ModifyEpisodeInput): Episode!
+  modifySiteConfig(input: SiteConfigInput): SiteConfig!
+  modifyMe(input: UserInput!): User!
+  deleteEpisode(id: ID!): DeletionResult!
 }
