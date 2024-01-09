@@ -34,6 +34,35 @@ type SiteConfig {
   setupComplete: Boolean!
 }
 
+type DeployLog {
+  id: ID!
+  log: String!
+  status: Int!
+  buildAt: Int!
+}
+
+type Hook {
+  id: ID!
+  name: String!
+  tableName: String!
+  trigger: String!
+
+  webURL: String!
+  method: String!
+  headers: String!
+  appendBody: String!
+}
+
+type HookLog {
+  id: ID!
+  hookID: ID!
+  hook: Hook!
+  status: Int!
+  response: String!
+  createTime: Int!
+  duration: Int!
+}
+
 input Pagination {
   pageIndex: Int!
   perPage: Int!
@@ -53,14 +82,32 @@ type PageInfo {
   hasPreviousPage: Boolean!
 }
 
-type EpisodesResult {
+type EpisodeListResult {
   items: [Episode!]!
   totalCount: Int!
   pageInfo: PageInfo
 }
 
-type UsersResult {
+type UserListResult {
   items: [User]!
+  totalCount: Int!
+  pageInfo: PageInfo
+}
+
+type HookListResult {
+  items: [Hook]!
+  totalCount: Int!
+  pageInfo: PageInfo
+}
+
+type HookLogListResult {
+  items: [HookLog]!
+  totalCount: Int!
+  pageInfo: PageInfo
+}
+
+type DeployLogListResult {
+  items: [DeployLog]!
   totalCount: Int!
   pageInfo: PageInfo
 }
@@ -70,13 +117,19 @@ type DashboardInfo {
 }
 
 type Query {
-  episodes(pagination: Pagination!): EpisodesResult!
+  episodeList(pagination: Pagination!): EpisodeListResult!
   episode(id: ID!): Episode!
-  users(pagination: Pagination!): UsersResult!
+  userList(pagination: Pagination!): UserListResult!
   login(credential: Credential!): LoginData!
   me: User!
   siteConfig: SiteConfig!
   dashboardInfo: DashboardInfo!
+  hookList(pagination: Pagination!): HookListResult!
+  hook(id: ID!): Hook!
+  hookLogList(pagination: Pagination!, hookID: ID!): HookLogListResult!
+  deployLogList(pagination: Pagination!): DeployLogListResult!
+  deployLog(id: ID!): DeployLog!
+  triggerHook(id: ID!): BooleanResult!
 }
 
 input NewEpisode {
@@ -115,8 +168,18 @@ input UserInput {
   password: String
 }
 
-type DeletionResult {
+type BooleanResult {
   result: Boolean!
+}
+
+input HookInput {
+  name: String!
+  tableName: String!
+  trigger: String!
+  webURL: String!
+  method: String!
+  headers: String
+  appendBody: String
 }
 
 type Mutation {
@@ -124,5 +187,8 @@ type Mutation {
   modifyEpisode(id: ID!, input: ModifyEpisodeInput): Episode!
   modifySiteConfig(input: SiteConfigInput): SiteConfig!
   modifyMe(input: UserInput!): User!
-  deleteEpisode(id: ID!): DeletionResult!
+  deleteEpisode(id: ID!): BooleanResult!
+  createHook(input: HookInput): Hook!
+  modifyHook(input: HookInput, id: ID!): Hook!
+  deleteHook(id: ID!): BooleanResult!
 }

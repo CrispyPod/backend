@@ -2,6 +2,10 @@
 
 package model
 
+type BooleanResult struct {
+	Result bool `json:"result"`
+}
+
 type Credential struct {
 	UserName string `json:"userName"`
 	Password string `json:"password"`
@@ -11,8 +15,17 @@ type DashboardInfo struct {
 	EpisodeCount int `json:"episodeCount"`
 }
 
-type DeletionResult struct {
-	Result bool `json:"result"`
+type DeployLog struct {
+	ID      string `json:"id"`
+	Log     string `json:"log"`
+	Status  int    `json:"status"`
+	BuildAt int    `json:"buildAt"`
+}
+
+type DeployLogListResult struct {
+	Items      []*DeployLog `json:"items"`
+	TotalCount int          `json:"totalCount"`
+	PageInfo   *PageInfo    `json:"pageInfo,omitempty"`
 }
 
 type Episode struct {
@@ -30,8 +43,51 @@ type Episode struct {
 	User                *User   `json:"user"`
 }
 
-type EpisodesResult struct {
+type EpisodeListResult struct {
 	Items      []*Episode `json:"items"`
+	TotalCount int        `json:"totalCount"`
+	PageInfo   *PageInfo  `json:"pageInfo,omitempty"`
+}
+
+type Hook struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	TableName  string `json:"tableName"`
+	Trigger    string `json:"trigger"`
+	WebURL     string `json:"webURL"`
+	Method     string `json:"method"`
+	Headers    string `json:"headers"`
+	AppendBody string `json:"appendBody"`
+}
+
+type HookInput struct {
+	Name       string  `json:"name"`
+	TableName  string  `json:"tableName"`
+	Trigger    string  `json:"trigger"`
+	WebURL     string  `json:"webURL"`
+	Method     string  `json:"method"`
+	Headers    *string `json:"headers,omitempty"`
+	AppendBody *string `json:"appendBody,omitempty"`
+}
+
+type HookListResult struct {
+	Items      []*Hook   `json:"items"`
+	TotalCount int       `json:"totalCount"`
+	PageInfo   *PageInfo `json:"pageInfo,omitempty"`
+}
+
+type HookLog struct {
+	ID         string `json:"id"`
+	HookID     string `json:"hookID"`
+	Hook       *Hook  `json:"hook"`
+	Status     int    `json:"status"`
+	Response   string `json:"response"`
+	CreateTime int    `json:"createTime"`
+	Duration   int    `json:"duration"`
+}
+
+type HookLogListResult struct {
+	Items      []*HookLog `json:"items"`
 	TotalCount int        `json:"totalCount"`
 	PageInfo   *PageInfo  `json:"pageInfo,omitempty"`
 }
@@ -103,7 +159,7 @@ type UserInput struct {
 	Password    *string `json:"password,omitempty"`
 }
 
-type UsersResult struct {
+type UserListResult struct {
 	Items      []*User   `json:"items"`
 	TotalCount int       `json:"totalCount"`
 	PageInfo   *PageInfo `json:"pageInfo,omitempty"`

@@ -8,6 +8,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -65,7 +66,7 @@ func (r *mutationResolver) CreateEpisode(ctx context.Context, input *model.NewEp
 	}
 
 	db.DB.Create(newEpisode)
-	rssfeed.GenerateRSSFeed()
+	go rssfeed.GenerateRSSFeed()
 
 	return newEpisode.ToGQLEpisode(), nil
 }
@@ -122,7 +123,7 @@ func (r *mutationResolver) ModifyEpisode(ctx context.Context, id string, input *
 	}
 
 	db.DB.Save(dbEpisode)
-	rssfeed.GenerateRSSFeed()
+	go rssfeed.GenerateRSSFeed()
 
 	return dbEpisode.ToGQLEpisode(), nil
 }
@@ -138,10 +139,6 @@ func (r *mutationResolver) ModifySiteConfig(ctx context.Context, input *model.Si
 	if err := db.DB.First(&siteConfig).Error; err != nil {
 		return nil, errors.New("site config not found")
 	}
-
-	// siteConfig.SiteDescription = input.SiteDescription
-	// siteConfig.SiteName = input.SiteName
-	// siteConfig.SiteUrl = input.SiteURL
 
 	if input.SiteDescription != nil {
 		siteConfig.SiteDescription = *input.SiteDescription
@@ -160,7 +157,7 @@ func (r *mutationResolver) ModifySiteConfig(ctx context.Context, input *model.Si
 	}
 
 	db.DB.Save(siteConfig)
-	rssfeed.GenerateRSSFeed()
+	go rssfeed.GenerateRSSFeed()
 
 	return siteConfig.ToGQLSiteConfig(len(userName) != 0), nil
 }
@@ -192,7 +189,7 @@ func (r *mutationResolver) ModifyMe(ctx context.Context, input model.UserInput) 
 }
 
 // DeleteEpisode is the resolver for the deleteEpisode field.
-func (r *mutationResolver) DeleteEpisode(ctx context.Context, id string) (*model.DeletionResult, error) {
+func (r *mutationResolver) DeleteEpisode(ctx context.Context, id string) (*model.BooleanResult, error) {
 	// panic(fmt.Errorf("not implemented: DeleteEpisode - deleteEpisode"))
 	userName := helpers.JWTFromContext(ctx)
 	if len(userName) == 0 {
@@ -208,11 +205,38 @@ func (r *mutationResolver) DeleteEpisode(ctx context.Context, id string) (*model
 		return nil, errors.New("failed to delete episode")
 	}
 
-	return &model.DeletionResult{Result: true}, nil
+	return &model.BooleanResult{Result: true}, nil
 }
 
-// Episodes is the resolver for the episodes field.
-func (r *queryResolver) Episodes(ctx context.Context, pagination model.Pagination) (*model.EpisodesResult, error) {
+// CreateHook is the resolver for the createHook field.
+func (r *mutationResolver) CreateHook(ctx context.Context, input *model.HookInput) (*model.Hook, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+	panic(fmt.Errorf("not implemented: CreateHook - createHook"))
+}
+
+// ModifyHook is the resolver for the modifyHook field.
+func (r *mutationResolver) ModifyHook(ctx context.Context, input *model.HookInput, id string) (*model.Hook, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+	panic(fmt.Errorf("not implemented: ModifyHook - modifyHook"))
+}
+
+// DeleteHook is the resolver for the deleteHook field.
+func (r *mutationResolver) DeleteHook(ctx context.Context, id string) (*model.BooleanResult, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+	panic(fmt.Errorf("not implemented: DeleteHook - deleteHook"))
+}
+
+// EpisodeList is the resolver for the episodeList field.
+func (r *queryResolver) EpisodeList(ctx context.Context, pagination model.Pagination) (*model.EpisodeListResult, error) {
 	var episodes []models.Episode
 	var rtEpisodes []*model.Episode
 	var count int64
@@ -245,7 +269,7 @@ func (r *queryResolver) Episodes(ctx context.Context, pagination model.Paginatio
 
 	pageInfo := helpers.GetPageInfo(pagination.PageIndex, pagination.PerPage, int(count))
 	// return rtEpisodes, nil
-	return &model.EpisodesResult{
+	return &model.EpisodeListResult{
 		TotalCount: int(count),
 		Items:      rtEpisodes,
 		PageInfo:   &pageInfo,
@@ -270,8 +294,8 @@ func (r *queryResolver) Episode(ctx context.Context, id string) (*model.Episode,
 	return dbEpisode.ToGQLEpisode(), nil
 }
 
-// Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context, pagination model.Pagination) (*model.UsersResult, error) {
+// UserList is the resolver for the userList field.
+func (r *queryResolver) UserList(ctx context.Context, pagination model.Pagination) (*model.UserListResult, error) {
 	var count int64
 	userName := helpers.JWTFromContext(ctx)
 	if len(userName) == 0 {
@@ -295,10 +319,9 @@ func (r *queryResolver) Users(ctx context.Context, pagination model.Pagination) 
 	for _, u := range users {
 		rtUsers = append(rtUsers, u.ToGQLUser())
 	}
-	// return rtUsers, nil
-	// return nil, nil
+
 	pageInfo := helpers.GetPageInfo(pagination.PageIndex, pagination.PerPage, int(count))
-	return &model.UsersResult{
+	return &model.UserListResult{
 		TotalCount: int(count),
 		Items:      rtUsers,
 		PageInfo:   &pageInfo,
@@ -366,6 +389,60 @@ func (r *queryResolver) DashboardInfo(ctx context.Context) (*model.DashboardInfo
 	db.DB.Model(models.Episode{}).Count(&count)
 	rtn.EpisodeCount = int(count)
 	return rtn, nil
+}
+
+// HookList is the resolver for the hookList field.
+func (r *queryResolver) HookList(ctx context.Context, pagination model.Pagination) (*model.HookListResult, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+	panic(fmt.Errorf("not implemented: HookList - hookList"))
+}
+
+// Hook is the resolver for the hook field.
+func (r *queryResolver) Hook(ctx context.Context, id string) (*model.Hook, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+	panic(fmt.Errorf("not implemented: Hook - hook"))
+}
+
+// HookLogList is the resolver for the hookLogList field.
+func (r *queryResolver) HookLogList(ctx context.Context, pagination model.Pagination, hookID string) (*model.HookLogListResult, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+	panic(fmt.Errorf("not implemented: HookLogList - hookLogList"))
+}
+
+// DeployLogList is the resolver for the deployLogList field.
+func (r *queryResolver) DeployLogList(ctx context.Context, pagination model.Pagination) (*model.DeployLogListResult, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+	panic(fmt.Errorf("not implemented: DeployLogList - deployLogList"))
+}
+
+// DeployLog is the resolver for the deployLog field.
+func (r *queryResolver) DeployLog(ctx context.Context, id string) (*model.DeployLog, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+	panic(fmt.Errorf("not implemented: DeployLog - deployLog"))
+}
+
+// TriggerHook is the resolver for the triggerHook field.
+func (r *queryResolver) TriggerHook(ctx context.Context, id string) (*model.BooleanResult, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+	panic(fmt.Errorf("not implemented: TriggerHook - triggerHook"))
 }
 
 // Mutation returns MutationResolver implementation.

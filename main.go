@@ -21,6 +21,9 @@ func main() {
 	helpers.CheckEnvVariables()
 	db.ConnectDatabase()
 
+	// // event dispatcher
+	// defer event.CloseWait()
+
 	r := gin.Default()
 	r.Use(helpers.JWTMiddleWare())
 	r.Use(cors.Default())

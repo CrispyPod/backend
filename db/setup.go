@@ -26,12 +26,12 @@ func ConnectDatabase() {
 	var dbConnString = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", dbHost, dbUser, dbPassword, dbName, dbPort)
 	db, err := gorm.Open(postgres.Open(dbConnString), &gorm.Config{})
 	if err != nil {
-		panic(fmt.Sprintf("Failed to connect to database: %s", err))
+		panic(fmt.Sprintf("Failed to connect to database: %s", err.Error()))
 	}
 
 	err = db.AutoMigrate(&models.DbUser{})
 	if err != nil {
-		panic(fmt.Sprintf("Failed to create User table: %s", err))
+		panic(fmt.Sprintf("Failed to create User table: %s", err.Error()))
 	}
 
 	if err = db.First(&models.DbUser{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
@@ -42,12 +42,27 @@ func ConnectDatabase() {
 
 	err = db.AutoMigrate(&models.Episode{})
 	if err != nil {
-		panic(fmt.Sprintf("Failed to create Episode table: %s", err))
+		panic(fmt.Sprintf("Failed to create Episode table: %s", err.Error()))
 	}
 
 	err = db.AutoMigrate(&models.SiteConfig{})
 	if err != nil {
-		panic(fmt.Sprintf("Failed to create SiteConfig table: %s", err))
+		panic(fmt.Sprintf("Failed to create SiteConfig table: %s", err.Error()))
+	}
+
+	err = db.AutoMigrate(&models.DeployLog{})
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create DeployLog table: %s", err.Error()))
+	}
+
+	err = db.AutoMigrate(&models.Hook{})
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create Hooks table: %s", err.Error()))
+	}
+
+	err = db.AutoMigrate(&models.HookLog{})
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create HooksLog table: %s", err.Error()))
 	}
 
 	if err = db.First(&models.SiteConfig{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
