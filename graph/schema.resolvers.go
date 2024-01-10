@@ -191,7 +191,6 @@ func (r *mutationResolver) ModifyMe(ctx context.Context, input model.UserInput) 
 
 // DeleteEpisode is the resolver for the deleteEpisode field.
 func (r *mutationResolver) DeleteEpisode(ctx context.Context, id string) (*model.BooleanResult, error) {
-	// panic(fmt.Errorf("not implemented: DeleteEpisode - deleteEpisode"))
 	userName := helpers.JWTFromContext(ctx)
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
@@ -318,7 +317,23 @@ func (r *mutationResolver) DeleteHook(ctx context.Context, id string) (*model.Bo
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
 	}
-	panic(fmt.Errorf("not implemented: DeleteHook - deleteHook"))
+
+	var jwtDbUser dbModels.DbUser
+	if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	var dbHook dbModels.Hook
+	if err := db.DB.Find(&dbHook, dbModels.Hook{ID: uuid.Must(uuid.Parse(id))}).Error; err != nil {
+		return nil, errors.New("hook not found")
+	}
+
+	if err := db.DB.Delete(dbHook).Error; err != nil {
+		return nil, errors.New("failed to delete hook")
+	}
+
+	// TODO: delete hook log, maybe we can add to scheduled job
+	return &model.BooleanResult{Result: true}, nil
 }
 
 // EpisodeList is the resolver for the episodeList field.
@@ -469,7 +484,6 @@ func (r *queryResolver) DashboardInfo(ctx context.Context) (*model.DashboardInfo
 		return nil, errors.New("authorization failed")
 	}
 
-	// panic(fmt.Errorf("not implemented: DashboardInfo - dashboardInfo"))
 	var rtn = &model.DashboardInfo{}
 	var count int64
 	db.DB.Model(dbModels.Episode{}).Count(&count)
@@ -528,9 +542,17 @@ func (r *queryResolver) Hook(ctx context.Context, id string) (*model.Hook, error
 		return nil, errors.New("user not found")
 	}
 
-	// var dbHook dbModels.Hook
+	var dbHook dbModels.Hook
+	hID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid hook id")
+	}
 
-	panic(fmt.Errorf("not implemented: Hook - hook"))
+	if err := db.DB.Find(&dbHook, dbModels.Hook{ID: uuid.Must(hID, err)}).Error; err != nil {
+		return nil, errors.New("hook not found")
+	}
+
+	return dbHook.ToGQLHook(), nil
 }
 
 // HookLogList is the resolver for the hookLogList field.
