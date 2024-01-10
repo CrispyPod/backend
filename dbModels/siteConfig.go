@@ -1,4 +1,4 @@
-package models
+package dbModels
 
 import (
 	"crispypod.com/crispypod-backend/graph/model"

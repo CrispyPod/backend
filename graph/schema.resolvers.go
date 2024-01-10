@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"crispypod.com/crispypod-backend/db"
+	"crispypod.com/crispypod-backend/dbModels"
 	"crispypod.com/crispypod-backend/graph/model"
 	"crispypod.com/crispypod-backend/helpers"
-	"crispypod.com/crispypod-backend/models"
 	"crispypod.com/crispypod-backend/rssfeed"
 	"github.com/google/uuid"
 )
@@ -28,8 +28,8 @@ func (r *mutationResolver) CreateEpisode(ctx context.Context, input *model.NewEp
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser models.DbUser
-	if err := db.DB.Where(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	var jwtDbUser dbModels.DbUser
+	if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
@@ -37,11 +37,11 @@ func (r *mutationResolver) CreateEpisode(ctx context.Context, input *model.NewEp
 	desc, _ = url.QueryUnescape(input.Description)
 	title, _ = url.QueryUnescape(input.Title)
 
-	newEpisode := models.Episode{
+	newEpisode := dbModels.Episode{
 		ID:            uuid.New(),
 		Title:         title,
 		Description:   desc,
-		EpisodeStatus: models.EpisodeStatus_Draft,
+		EpisodeStatus: dbModels.EpisodeStatus_Draft,
 		UserID:        jwtDbUser.ID,
 		CreateTime:    time.Now(),
 	}
@@ -79,13 +79,13 @@ func (r *mutationResolver) ModifyEpisode(ctx context.Context, id string, input *
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser models.DbUser
-	if err := db.DB.Model(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	var jwtDbUser dbModels.DbUser
+	if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
-	var dbEpisode models.Episode
-	if err := db.DB.Where(models.Episode{ID: uuid.Must(uuid.Parse(id))}).Find(&dbEpisode).Error; err != nil {
+	var dbEpisode dbModels.Episode
+	if err := db.DB.Where(dbModels.Episode{ID: uuid.Must(uuid.Parse(id))}).Find(&dbEpisode).Error; err != nil {
 		return nil, errors.New("episode not found")
 	}
 
@@ -100,7 +100,7 @@ func (r *mutationResolver) ModifyEpisode(ctx context.Context, id string, input *
 	}
 
 	if input.EpisodeStatus != nil {
-		dbEpisode.EpisodeStatus = models.EpisodeStatusType(*input.EpisodeStatus)
+		dbEpisode.EpisodeStatus = dbModels.EpisodeStatusType(*input.EpisodeStatus)
 	}
 
 	if input.AudioFileName != nil {
@@ -136,7 +136,7 @@ func (r *mutationResolver) ModifySiteConfig(ctx context.Context, input *model.Si
 		return nil, errors.New("authorization failed")
 	}
 
-	var siteConfig models.SiteConfig
+	var siteConfig dbModels.SiteConfig
 	if err := db.DB.First(&siteConfig).Error; err != nil {
 		return nil, errors.New("site config not found")
 	}
@@ -170,8 +170,8 @@ func (r *mutationResolver) ModifyMe(ctx context.Context, input model.UserInput) 
 		return nil, errors.New("authorization failed")
 	}
 
-	var dbJWTUser models.DbUser
-	if err := db.DB.Model(&models.DbUser{UserName: userName}).Find(&dbJWTUser).Error; err != nil {
+	var dbJWTUser dbModels.DbUser
+	if err := db.DB.Model(&dbModels.DbUser{UserName: userName}).Find(&dbJWTUser).Error; err != nil {
 		return nil, errors.New(err.Error())
 	}
 
@@ -197,8 +197,8 @@ func (r *mutationResolver) DeleteEpisode(ctx context.Context, id string) (*model
 		return nil, errors.New("authorization failed")
 	}
 
-	var dbEpisode models.Episode
-	if err := db.DB.Find(&dbEpisode, models.Episode{ID: uuid.Must(uuid.Parse(id))}).Error; err != nil {
+	var dbEpisode dbModels.Episode
+	if err := db.DB.Find(&dbEpisode, dbModels.Episode{ID: uuid.Must(uuid.Parse(id))}).Error; err != nil {
 		return nil, errors.New("episode not found")
 	}
 
@@ -216,8 +216,8 @@ func (r *mutationResolver) CreateHook(ctx context.Context, input *model.HookInpu
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser models.DbUser
-	if err := db.DB.Where(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	var jwtDbUser dbModels.DbUser
+	if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
@@ -236,11 +236,11 @@ func (r *mutationResolver) CreateHook(ctx context.Context, input *model.HookInpu
 		return nil, errors.New("invalid Method, please provide correct http method")
 	}
 
-	newHook := models.Hook{
+	newHook := dbModels.Hook{
 		ID:         uuid.New(),
 		Name:       name,
 		WebURL:     weburl,
-		Trigger:    models.HookTriggerType(input.Trigger),
+		Trigger:    dbModels.HookTriggerType(input.Trigger),
 		Method:     method,
 		CreateTime: time.Now(),
 	}
@@ -272,22 +272,22 @@ func (r *mutationResolver) ModifyHook(ctx context.Context, input *model.HookInpu
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser models.DbUser
-	if err := db.DB.Where(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	var jwtDbUser dbModels.DbUser
+	if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
-	var dbHook models.Hook
+	var dbHook dbModels.Hook
 	hookId, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid hook id")
 	}
-	if err := db.DB.Where(models.Hook{ID: hookId}).Find(&dbHook).Error; err != nil {
+	if err := db.DB.Where(dbModels.Hook{ID: hookId}).Find(&dbHook).Error; err != nil {
 		return nil, errors.New("hook not found")
 	}
 
 	dbHook.Name = input.Name
-	dbHook.Trigger = models.HookTriggerType(input.Trigger)
+	dbHook.Trigger = dbModels.HookTriggerType(input.Trigger)
 	dbHook.WebURL = input.WebURL
 	dbHook.Method = input.Method
 	dbHook.ModifyTime = time.Now()
@@ -323,18 +323,18 @@ func (r *mutationResolver) DeleteHook(ctx context.Context, id string) (*model.Bo
 
 // EpisodeList is the resolver for the episodeList field.
 func (r *queryResolver) EpisodeList(ctx context.Context, pagination model.Pagination) (*model.EpisodeListResult, error) {
-	var episodes []models.Episode
+	var episodes []dbModels.Episode
 	var rtEpisodes []*model.Episode
 	var count int64
 	if userName := helpers.JWTFromContext(ctx); len(userName) == 0 {
 		err := db.DB.
 			Scopes(helpers.Paginate(pagination.PageIndex, pagination.PerPage)).
 			Order("create_time DESC").
-			Find(&episodes, models.Episode{EpisodeStatus: models.EpisodeStatus_Published}).Error
+			Find(&episodes, dbModels.Episode{EpisodeStatus: dbModels.EpisodeStatus_Published}).Error
 		if err != nil {
 			return nil, errors.New("episodes not found")
 		}
-		err = db.DB.Model(models.Episode{}).Where(models.Episode{EpisodeStatus: models.EpisodeStatus_Published}).Count(&count).Error
+		err = db.DB.Model(dbModels.Episode{}).Where(dbModels.Episode{EpisodeStatus: dbModels.EpisodeStatus_Published}).Count(&count).Error
 		if err != nil {
 			return nil, errors.New("episodes not found")
 		}
@@ -344,7 +344,7 @@ func (r *queryResolver) EpisodeList(ctx context.Context, pagination model.Pagina
 			Find(&episodes).Error; err != nil {
 			return nil, errors.New("episodes not found")
 		}
-		if err := db.DB.Model(models.Episode{}).Count(&count).Error; err != nil {
+		if err := db.DB.Model(dbModels.Episode{}).Count(&count).Error; err != nil {
 			return nil, errors.New("episodes not found")
 		}
 	}
@@ -365,15 +365,15 @@ func (r *queryResolver) EpisodeList(ctx context.Context, pagination model.Pagina
 // Episode is the resolver for the episode field.
 func (r *queryResolver) Episode(ctx context.Context, id string) (*model.Episode, error) {
 	userName := helpers.JWTFromContext(ctx)
-	var dbEpisode models.Episode
+	var dbEpisode dbModels.Episode
 	epId, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid episode id")
 	}
-	if err := db.DB.Find(&dbEpisode, models.Episode{ID: uuid.Must(epId, err)}).Error; err != nil {
+	if err := db.DB.Find(&dbEpisode, dbModels.Episode{ID: uuid.Must(epId, err)}).Error; err != nil {
 		return nil, errors.New("episode not found")
 	}
-	if len(userName) == 0 && dbEpisode.EpisodeStatus == models.EpisodeStatus_Draft {
+	if len(userName) == 0 && dbEpisode.EpisodeStatus == dbModels.EpisodeStatus_Draft {
 		// check if episode status was draft, if so, we will not return it while user has not logged in
 		return nil, errors.New("episode not accessable")
 	}
@@ -388,16 +388,16 @@ func (r *queryResolver) UserList(ctx context.Context, pagination model.Paginatio
 		return nil, errors.New("authorization failed")
 	}
 
-	var dbJWTUser models.DbUser
-	if err := db.DB.Find(&dbJWTUser, models.DbUser{UserName: userName}).Count(&count).Error; err != nil {
+	var dbJWTUser dbModels.DbUser
+	if err := db.DB.Find(&dbJWTUser, dbModels.DbUser{UserName: userName}).Count(&count).Error; err != nil {
 		return nil, errors.New(err.Error())
 	}
 	if !dbJWTUser.IsAdmin {
 		return nil, errors.New("user not to access this data")
 	}
 
-	var users []models.DbUser
-	if err := db.DB.Model(&models.DbUser{}).Count(&count).Find(&users).Error; err != nil {
+	var users []dbModels.DbUser
+	if err := db.DB.Model(&dbModels.DbUser{}).Count(&count).Find(&users).Error; err != nil {
 		return nil, errors.New(err.Error())
 	}
 
@@ -416,8 +416,8 @@ func (r *queryResolver) UserList(ctx context.Context, pagination model.Paginatio
 
 // Login is the resolver for the login field.
 func (r *queryResolver) Login(ctx context.Context, credential model.Credential) (*model.LoginData, error) {
-	var user models.DbUser
-	if err := db.DB.Model(models.DbUser{UserName: credential.UserName}).First(&user).Error; err != nil {
+	var user dbModels.DbUser
+	if err := db.DB.Model(dbModels.DbUser{UserName: credential.UserName}).First(&user).Error; err != nil {
 		return nil, errors.New("user with provided credentials not found")
 	}
 	if helpers.CheckPasswordHash(credential.Password, user.Password) {
@@ -436,8 +436,8 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 		return nil, errors.New("authorization failed")
 	}
 
-	var dbJWTUser models.DbUser
-	if err := db.DB.Model(&models.DbUser{UserName: userName}).Find(&dbJWTUser).Error; err != nil {
+	var dbJWTUser dbModels.DbUser
+	if err := db.DB.Model(&dbModels.DbUser{UserName: userName}).Find(&dbJWTUser).Error; err != nil {
 		return nil, errors.New(err.Error())
 	}
 
@@ -446,10 +446,10 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 
 // SiteConfig is the resolver for the siteConfig field.
 func (r *queryResolver) SiteConfig(ctx context.Context) (*model.SiteConfig, error) {
-	var siteConfig models.SiteConfig
+	var siteConfig dbModels.SiteConfig
 	userName := helpers.JWTFromContext(ctx)
 	if err := db.DB.First(&siteConfig).Error; err != nil {
-		siteConfig = models.SiteConfig{
+		siteConfig = dbModels.SiteConfig{
 			ID:              uuid.New(),
 			SiteName:        "CrispyPod",
 			SiteDescription: "Super awesome podcast!",
@@ -472,7 +472,7 @@ func (r *queryResolver) DashboardInfo(ctx context.Context) (*model.DashboardInfo
 	// panic(fmt.Errorf("not implemented: DashboardInfo - dashboardInfo"))
 	var rtn = &model.DashboardInfo{}
 	var count int64
-	db.DB.Model(models.Episode{}).Count(&count)
+	db.DB.Model(dbModels.Episode{}).Count(&count)
 	rtn.EpisodeCount = int(count)
 	return rtn, nil
 }
@@ -484,12 +484,12 @@ func (r *queryResolver) HookList(ctx context.Context, pagination model.Paginatio
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser models.DbUser
-	if err := db.DB.Model(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	var jwtDbUser dbModels.DbUser
+	if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
-	var hooks []models.Hook
+	var hooks []dbModels.Hook
 	var count int64
 	err := db.DB.Scopes(helpers.Paginate(pagination.PageIndex, pagination.PerPage)).
 		Order("create_time DESC").
@@ -497,7 +497,7 @@ func (r *queryResolver) HookList(ctx context.Context, pagination model.Paginatio
 	if err != nil {
 		return nil, errors.New("hooks not found")
 	}
-	err = db.DB.Model(models.Hook{}).Count(&count).Error
+	err = db.DB.Model(dbModels.Hook{}).Count(&count).Error
 	if err != nil {
 		return nil, errors.New("hooks not found")
 	}
@@ -514,7 +514,6 @@ func (r *queryResolver) HookList(ctx context.Context, pagination model.Paginatio
 		Items:      rtHooks,
 		PageInfo:   &pageInfo,
 	}, nil
-	// panic(fmt.Errorf("not implemented: HookList - hookList"))
 }
 
 // Hook is the resolver for the hook field.
@@ -523,6 +522,14 @@ func (r *queryResolver) Hook(ctx context.Context, id string) (*model.Hook, error
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
 	}
+
+	var jwtDbUser dbModels.DbUser
+	if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	// var dbHook dbModels.Hook
+
 	panic(fmt.Errorf("not implemented: Hook - hook"))
 }
 
@@ -533,8 +540,8 @@ func (r *queryResolver) HookLogList(ctx context.Context, pagination model.Pagina
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser models.DbUser
-	if err := db.DB.Model(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	var jwtDbUser dbModels.DbUser
+	if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 

@@ -1,4 +1,4 @@
-package models
+package dbModels
 
 import (
 	"database/sql"

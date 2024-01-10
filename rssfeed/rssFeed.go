@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"crispypod.com/crispypod-backend/db"
-	"crispypod.com/crispypod-backend/models"
+	"crispypod.com/crispypod-backend/dbModels"
 	"github.com/gorilla/feeds"
 )
 
 func GenerateRSSFeed() {
-	var dbSiteConfig models.SiteConfig
+	var dbSiteConfig dbModels.SiteConfig
 	db.DB.First(&dbSiteConfig)
 	feed := feeds.Feed{
 		Title:       dbSiteConfig.SiteName,
@@ -21,8 +21,8 @@ func GenerateRSSFeed() {
 		Created:     time.Now(),
 	}
 
-	var episodes []models.Episode
-	if err := db.DB.Find(&episodes, models.Episode{EpisodeStatus: models.EpisodeStatus_Published}); err != nil {
+	var episodes []dbModels.Episode
+	if err := db.DB.Find(&episodes, dbModels.Episode{EpisodeStatus: dbModels.EpisodeStatus_Published}); err != nil {
 		fmt.Println("Failed to get episodes.")
 	}
 

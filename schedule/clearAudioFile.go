@@ -8,15 +8,15 @@ import (
 	"time"
 
 	"crispypod.com/crispypod-backend/db"
-	"crispypod.com/crispypod-backend/models"
+	"crispypod.com/crispypod-backend/dbModels"
 	"golang.org/x/exp/slices"
 )
 
 func ClearAudioFile() {
 	fmt.Println("Clearing audio files started")
 	var audioFileNames []string
-	// var episodes []models.Episode
-	if err := db.DB.Model(&models.Episode{}).Select("audio_file_name").Find(&audioFileNames).Error; err != nil {
+	// var episodes []dbModels.Episode
+	if err := db.DB.Model(&dbModels.Episode{}).Select("audio_file_name").Find(&audioFileNames).Error; err != nil {
 		fmt.Println("Failed to fetch episode data")
 	}
 	// fmt.Println(audioFileNames)

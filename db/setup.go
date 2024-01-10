@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"crispypod.com/crispypod-backend/dbModels"
 	"crispypod.com/crispypod-backend/helpers"
-	"crispypod.com/crispypod-backend/models"
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -29,44 +29,44 @@ func ConnectDatabase() {
 		panic(fmt.Sprintf("Failed to connect to database: %s", err.Error()))
 	}
 
-	err = db.AutoMigrate(&models.DbUser{})
+	err = db.AutoMigrate(&dbModels.DbUser{})
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create User table: %s", err.Error()))
 	}
 
-	if err = db.First(&models.DbUser{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+	if err = db.First(&dbModels.DbUser{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		password, _ := helpers.HashPassword("crispy.pod")
-		admin := models.DbUser{UserName: "admin", Password: password, ID: uuid.New(), IsAdmin: true, DisplayName: "Admin", Email: "admin@crispypod.com"}
+		admin := dbModels.DbUser{UserName: "admin", Password: password, ID: uuid.New(), IsAdmin: true, DisplayName: "Admin", Email: "admin@crispypod.com"}
 		db.Create(&admin)
 	}
 
-	err = db.AutoMigrate(&models.Episode{})
+	err = db.AutoMigrate(&dbModels.Episode{})
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create Episode table: %s", err.Error()))
 	}
 
-	err = db.AutoMigrate(&models.SiteConfig{})
+	err = db.AutoMigrate(&dbModels.SiteConfig{})
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create SiteConfig table: %s", err.Error()))
 	}
 
-	err = db.AutoMigrate(&models.DeployLog{})
+	err = db.AutoMigrate(&dbModels.DeployLog{})
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create DeployLog table: %s", err.Error()))
 	}
 
-	err = db.AutoMigrate(&models.Hook{})
+	err = db.AutoMigrate(&dbModels.Hook{})
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create Hooks table: %s", err.Error()))
 	}
 
-	err = db.AutoMigrate(&models.HookLog{})
+	err = db.AutoMigrate(&dbModels.HookLog{})
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create HooksLog table: %s", err.Error()))
 	}
 
-	if err = db.First(&models.SiteConfig{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-		siteConfig := models.SiteConfig{
+	if err = db.First(&dbModels.SiteConfig{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		siteConfig := dbModels.SiteConfig{
 			ID:              uuid.New(),
 			SiteName:        "CrispyPod",
 			SiteDescription: "Super awesome podcast!",

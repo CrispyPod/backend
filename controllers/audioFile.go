@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"crispypod.com/crispypod-backend/db"
+	"crispypod.com/crispypod-backend/dbModels"
 	"crispypod.com/crispypod-backend/helpers"
-	"crispypod.com/crispypod-backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
@@ -37,7 +37,7 @@ func AudioFileUpload(c *gin.Context) {
 	var uploadStruct UploadStruct
 	c.Bind(&uploadStruct)
 
-	var dbEpisode models.Episode
+	var dbEpisode dbModels.Episode
 	var epId uuid.UUID
 	var err error
 	if epId, err = uuid.Parse(uploadStruct.EpisodeId); err != nil {
@@ -45,7 +45,7 @@ func AudioFileUpload(c *gin.Context) {
 		return
 	}
 
-	if err := db.DB.Model(models.Episode{ID: epId}).Find(&dbEpisode).Error; err != nil {
+	if err := db.DB.Model(dbModels.Episode{ID: epId}).Find(&dbEpisode).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "episode not found"})
 		return
 	}

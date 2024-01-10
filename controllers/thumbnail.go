@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"crispypod.com/crispypod-backend/db"
+	"crispypod.com/crispypod-backend/dbModels"
 	"crispypod.com/crispypod-backend/helpers"
-	"crispypod.com/crispypod-backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
@@ -32,8 +32,8 @@ func ThumbnailUpload(c *gin.Context) {
 	var uploadStruct UploadStruct
 	c.Bind(&uploadStruct)
 
-	var dbEpisode models.Episode
-	if err := db.DB.Model(models.Episode{ID: uuid.Must(uuid.Parse(uploadStruct.EpisodeId))}).Find(&dbEpisode).Error; err != nil {
+	var dbEpisode dbModels.Episode
+	if err := db.DB.Model(dbModels.Episode{ID: uuid.Must(uuid.Parse(uploadStruct.EpisodeId))}).Find(&dbEpisode).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "episode not found"})
 	}
 
