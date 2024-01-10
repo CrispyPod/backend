@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"time"
 
 	"crispypod.com/crispypod-backend/graph/model"
 	"github.com/google/uuid"
@@ -23,6 +24,8 @@ type Hook struct {
 	Method     string
 	Headers    sql.NullString // in json format
 	AppendBody sql.NullString
+	CreateTime time.Time
+	ModifyTime time.Time
 }
 
 func (h *Hook) ToGQLHook() *model.Hook {

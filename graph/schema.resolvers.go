@@ -237,11 +237,12 @@ func (r *mutationResolver) CreateHook(ctx context.Context, input *model.HookInpu
 	}
 
 	newHook := models.Hook{
-		ID:      uuid.New(),
-		Name:    name,
-		WebURL:  weburl,
-		Trigger: models.HookTriggerType(input.Trigger),
-		Method:  method,
+		ID:         uuid.New(),
+		Name:       name,
+		WebURL:     weburl,
+		Trigger:    models.HookTriggerType(input.Trigger),
+		Method:     method,
+		CreateTime: time.Now(),
 	}
 
 	if input.Headers != nil {
@@ -270,7 +271,45 @@ func (r *mutationResolver) ModifyHook(ctx context.Context, input *model.HookInpu
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
 	}
-	panic(fmt.Errorf("not implemented: ModifyHook - modifyHook"))
+
+	var jwtDbUser models.DbUser
+	if err := db.DB.Where(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	var dbHook models.Hook
+	hookId, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid hook id")
+	}
+	if err := db.DB.Where(models.Hook{ID: hookId}).Find(&dbHook).Error; err != nil {
+		return nil, errors.New("hook not found")
+	}
+
+	dbHook.Name = input.Name
+	dbHook.Trigger = models.HookTriggerType(input.Trigger)
+	dbHook.WebURL = input.WebURL
+	dbHook.Method = input.Method
+	dbHook.ModifyTime = time.Now()
+
+	if input.Headers != nil {
+		headers, _ := url.QueryUnescape(*input.Headers)
+		if !helpers.JsonValidate(headers) {
+			return nil, errors.New("invalid headers, please provide headers in valid json format")
+		}
+		dbHook.Headers.String = headers
+	}
+
+	if input.AppendBody != nil {
+		appendBody, _ := url.QueryUnescape(*input.AppendBody)
+		if !helpers.JsonValidate(appendBody) {
+			return nil, errors.New("invalid appendBody, please provide appendBody in valid json format")
+		}
+		dbHook.AppendBody.String = appendBody
+	}
+
+	db.DB.Save(dbHook)
+	return dbHook.ToGQLHook(), nil
 }
 
 // DeleteHook is the resolver for the deleteHook field.
@@ -335,7 +374,7 @@ func (r *queryResolver) Episode(ctx context.Context, id string) (*model.Episode,
 		return nil, errors.New("episode not found")
 	}
 	if len(userName) == 0 && dbEpisode.EpisodeStatus == models.EpisodeStatus_Draft {
-		// check if episode status was draft, if so, we will not return it.
+		// check if episode status was draft, if so, we will not return it while user has not logged in
 		return nil, errors.New("episode not accessable")
 	}
 	return dbEpisode.ToGQLEpisode(), nil
@@ -444,7 +483,38 @@ func (r *queryResolver) HookList(ctx context.Context, pagination model.Paginatio
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
 	}
-	panic(fmt.Errorf("not implemented: HookList - hookList"))
+
+	var jwtDbUser models.DbUser
+	if err := db.DB.Model(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	var hooks []models.Hook
+	var count int64
+	err := db.DB.Scopes(helpers.Paginate(pagination.PageIndex, pagination.PerPage)).
+		Order("create_time DESC").
+		Find(&hooks).Error
+	if err != nil {
+		return nil, errors.New("hooks not found")
+	}
+	err = db.DB.Model(models.Hook{}).Count(&count).Error
+	if err != nil {
+		return nil, errors.New("hooks not found")
+	}
+
+	var rtHooks []*model.Hook
+	for _, h := range hooks {
+		rtHooks = append(rtHooks, h.ToGQLHook())
+	}
+
+	pageInfo := helpers.GetPageInfo(pagination.PageIndex, pagination.PerPage, int(count))
+
+	return &model.HookListResult{
+		TotalCount: int(count),
+		Items:      rtHooks,
+		PageInfo:   &pageInfo,
+	}, nil
+	// panic(fmt.Errorf("not implemented: HookList - hookList"))
 }
 
 // Hook is the resolver for the hook field.
@@ -462,6 +532,12 @@ func (r *queryResolver) HookLogList(ctx context.Context, pagination model.Pagina
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
 	}
+
+	var jwtDbUser models.DbUser
+	if err := db.DB.Model(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+
 	panic(fmt.Errorf("not implemented: HookLogList - hookLogList"))
 }
 
