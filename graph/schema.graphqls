@@ -44,8 +44,7 @@ type DeployLog {
 type Hook {
   id: ID!
   name: String!
-  tableName: String!
-  trigger: String!
+  trigger: Int!
 
   webURL: String!
   method: String!
@@ -174,8 +173,7 @@ type BooleanResult {
 
 input HookInput {
   name: String!
-  tableName: String!
-  trigger: String!
+  trigger: Int!
   webURL: String!
   method: String!
   headers: String

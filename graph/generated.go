@@ -95,7 +95,6 @@ type ComplexityRoot struct {
 		ID         func(childComplexity int) int
 		Method     func(childComplexity int) int
 		Name       func(childComplexity int) int
-		TableName  func(childComplexity int) int
 		Trigger    func(childComplexity int) int
 		WebURL     func(childComplexity int) int
 	}
@@ -429,13 +428,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Hook.Name(childComplexity), true
-
-	case "Hook.tableName":
-		if e.complexity.Hook.TableName == nil {
-			break
-		}
-
-		return e.complexity.Hook.TableName(childComplexity), true
 
 	case "Hook.trigger":
 		if e.complexity.Hook.Trigger == nil {
@@ -2558,50 +2550,6 @@ func (ec *executionContext) fieldContext_Hook_name(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Hook_tableName(ctx context.Context, field graphql.CollectedField, obj *model.Hook) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Hook_tableName(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TableName, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Hook_tableName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Hook",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Hook_trigger(ctx context.Context, field graphql.CollectedField, obj *model.Hook) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Hook_trigger(ctx, field)
 	if err != nil {
@@ -2628,9 +2576,9 @@ func (ec *executionContext) _Hook_trigger(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Hook_trigger(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2640,7 +2588,7 @@ func (ec *executionContext) fieldContext_Hook_trigger(ctx context.Context, field
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2865,8 +2813,6 @@ func (ec *executionContext) fieldContext_HookListResult_items(ctx context.Contex
 				return ec.fieldContext_Hook_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Hook_name(ctx, field)
-			case "tableName":
-				return ec.fieldContext_Hook_tableName(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
 			case "webURL":
@@ -3106,8 +3052,6 @@ func (ec *executionContext) fieldContext_HookLog_hook(ctx context.Context, field
 				return ec.fieldContext_Hook_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Hook_name(ctx, field)
-			case "tableName":
-				return ec.fieldContext_Hook_tableName(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
 			case "webURL":
@@ -3896,8 +3840,6 @@ func (ec *executionContext) fieldContext_Mutation_createHook(ctx context.Context
 				return ec.fieldContext_Hook_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Hook_name(ctx, field)
-			case "tableName":
-				return ec.fieldContext_Hook_tableName(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
 			case "webURL":
@@ -3969,8 +3911,6 @@ func (ec *executionContext) fieldContext_Mutation_modifyHook(ctx context.Context
 				return ec.fieldContext_Hook_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Hook_name(ctx, field)
-			case "tableName":
-				return ec.fieldContext_Hook_tableName(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
 			case "webURL":
@@ -4680,8 +4620,6 @@ func (ec *executionContext) fieldContext_Query_hook(ctx context.Context, field g
 				return ec.fieldContext_Hook_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Hook_name(ctx, field)
-			case "tableName":
-				return ec.fieldContext_Hook_tableName(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
 			case "webURL":
@@ -7536,7 +7474,7 @@ func (ec *executionContext) unmarshalInputHookInput(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "tableName", "trigger", "webURL", "method", "headers", "appendBody"}
+	fieldsInOrder := [...]string{"name", "trigger", "webURL", "method", "headers", "appendBody"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7550,16 +7488,9 @@ func (ec *executionContext) unmarshalInputHookInput(ctx context.Context, obj int
 				return it, err
 			}
 			it.Name = data
-		case "tableName":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tableName"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TableName = data
 		case "trigger":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("trigger"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8203,11 +8134,6 @@ func (ec *executionContext) _Hook(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "name":
 			out.Values[i] = ec._Hook_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "tableName":
-			out.Values[i] = ec._Hook_tableName(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

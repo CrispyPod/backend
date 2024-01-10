@@ -52,8 +52,7 @@ type EpisodeListResult struct {
 type Hook struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
-	TableName  string `json:"tableName"`
-	Trigger    string `json:"trigger"`
+	Trigger    int    `json:"trigger"`
 	WebURL     string `json:"webURL"`
 	Method     string `json:"method"`
 	Headers    string `json:"headers"`
@@ -62,8 +61,7 @@ type Hook struct {
 
 type HookInput struct {
 	Name       string  `json:"name"`
-	TableName  string  `json:"tableName"`
-	Trigger    string  `json:"trigger"`
+	Trigger    int     `json:"trigger"`
 	WebURL     string  `json:"webURL"`
 	Method     string  `json:"method"`
 	Headers    *string `json:"headers,omitempty"`

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"crispypod.com/crispypod-backend/db"
@@ -214,7 +215,53 @@ func (r *mutationResolver) CreateHook(ctx context.Context, input *model.HookInpu
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
 	}
-	panic(fmt.Errorf("not implemented: CreateHook - createHook"))
+
+	var jwtDbUser models.DbUser
+	if err := db.DB.Where(models.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	var name, weburl, method string
+	name, _ = url.QueryUnescape(input.Name)
+	weburl, _ = url.QueryUnescape(input.WebURL)
+	_method, _ := url.QueryUnescape(input.Method)
+
+	method = strings.ToUpper(_method)
+
+	if !helpers.URLValidate(weburl) {
+		return nil, errors.New("invalid WebURL, please include 'http://' or 'https://'")
+	}
+
+	if !helpers.MethodValidate(method) {
+		return nil, errors.New("invalid Method, please provide correct http method")
+	}
+
+	newHook := models.Hook{
+		ID:      uuid.New(),
+		Name:    name,
+		WebURL:  weburl,
+		Trigger: models.HookTriggerType(input.Trigger),
+		Method:  method,
+	}
+
+	if input.Headers != nil {
+		headers, _ := url.QueryUnescape(*input.Headers)
+		if !helpers.JsonValidate(headers) {
+			return nil, errors.New("invalid headers, please provide headers in valid json format")
+		}
+		newHook.Headers.String = headers
+	}
+
+	if input.AppendBody != nil {
+		appendBody, _ := url.QueryUnescape(*input.AppendBody)
+		if !helpers.JsonValidate(appendBody) {
+			return nil, errors.New("invalid appendBody, please provide appendBody in valid json format")
+		}
+		newHook.AppendBody.String = appendBody
+	}
+
+	db.DB.Create(newHook)
+	return newHook.ToGQLHook(), nil
 }
 
 // ModifyHook is the resolver for the modifyHook field.
