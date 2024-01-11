@@ -56,10 +56,11 @@ type ComplexityRoot struct {
 	}
 
 	DeployLog struct {
-		BuildAt func(childComplexity int) int
-		ID      func(childComplexity int) int
-		Log     func(childComplexity int) int
-		Status  func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		Duration   func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Log        func(childComplexity int) int
+		Status     func(childComplexity int) int
 	}
 
 	DeployLogListResult struct {
@@ -240,12 +241,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DashboardInfo.EpisodeCount(childComplexity), true
 
-	case "DeployLog.buildAt":
-		if e.complexity.DeployLog.BuildAt == nil {
+	case "DeployLog.createTime":
+		if e.complexity.DeployLog.CreateTime == nil {
 			break
 		}
 
-		return e.complexity.DeployLog.BuildAt(childComplexity), true
+		return e.complexity.DeployLog.CreateTime(childComplexity), true
+
+	case "DeployLog.duration":
+		if e.complexity.DeployLog.Duration == nil {
+			break
+		}
+
+		return e.complexity.DeployLog.Duration(childComplexity), true
 
 	case "DeployLog.id":
 		if e.complexity.DeployLog.ID == nil {
@@ -1591,8 +1599,8 @@ func (ec *executionContext) fieldContext_DeployLog_status(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _DeployLog_buildAt(ctx context.Context, field graphql.CollectedField, obj *model.DeployLog) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_DeployLog_buildAt(ctx, field)
+func (ec *executionContext) _DeployLog_createTime(ctx context.Context, field graphql.CollectedField, obj *model.DeployLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DeployLog_createTime(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1605,7 +1613,7 @@ func (ec *executionContext) _DeployLog_buildAt(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.BuildAt, nil
+		return obj.CreateTime, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1622,7 +1630,51 @@ func (ec *executionContext) _DeployLog_buildAt(ctx context.Context, field graphq
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_DeployLog_buildAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_DeployLog_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DeployLog",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DeployLog_duration(ctx context.Context, field graphql.CollectedField, obj *model.DeployLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DeployLog_duration(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DeployLog_duration(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "DeployLog",
 		Field:      field,
@@ -1680,8 +1732,10 @@ func (ec *executionContext) fieldContext_DeployLogListResult_items(ctx context.C
 				return ec.fieldContext_DeployLog_log(ctx, field)
 			case "status":
 				return ec.fieldContext_DeployLog_status(ctx, field)
-			case "buildAt":
-				return ec.fieldContext_DeployLog_buildAt(ctx, field)
+			case "createTime":
+				return ec.fieldContext_DeployLog_createTime(ctx, field)
+			case "duration":
+				return ec.fieldContext_DeployLog_duration(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DeployLog", field.Name)
 		},
@@ -4819,8 +4873,10 @@ func (ec *executionContext) fieldContext_Query_deployLog(ctx context.Context, fi
 				return ec.fieldContext_DeployLog_log(ctx, field)
 			case "status":
 				return ec.fieldContext_DeployLog_status(ctx, field)
-			case "buildAt":
-				return ec.fieldContext_DeployLog_buildAt(ctx, field)
+			case "createTime":
+				return ec.fieldContext_DeployLog_createTime(ctx, field)
+			case "duration":
+				return ec.fieldContext_DeployLog_duration(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DeployLog", field.Name)
 		},
@@ -7923,8 +7979,13 @@ func (ec *executionContext) _DeployLog(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "buildAt":
-			out.Values[i] = ec._DeployLog_buildAt(ctx, field, obj)
+		case "createTime":
+			out.Values[i] = ec._DeployLog_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "duration":
+			out.Values[i] = ec._DeployLog_duration(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

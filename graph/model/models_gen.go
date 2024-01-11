@@ -16,10 +16,11 @@ type DashboardInfo struct {
 }
 
 type DeployLog struct {
-	ID      string `json:"id"`
-	Log     string `json:"log"`
-	Status  int    `json:"status"`
-	BuildAt int    `json:"buildAt"`
+	ID         string `json:"id"`
+	Log        string `json:"log"`
+	Status     int    `json:"status"`
+	CreateTime int    `json:"createTime"`
+	Duration   int    `json:"duration"`
 }
 
 type DeployLogListResult struct {

@@ -38,7 +38,8 @@ type DeployLog {
   id: ID!
   log: String!
   status: Int!
-  buildAt: Int!
+  createTime: Int!
+  duration: Int!
 }
 
 type Hook {

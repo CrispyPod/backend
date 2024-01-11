@@ -215,10 +215,10 @@ func (r *mutationResolver) CreateHook(ctx context.Context, input *model.HookInpu
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser dbModels.DbUser
-	if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
-		return nil, errors.New("user not found")
-	}
+	// var jwtDbUser dbModels.DbUser
+	// if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	// 	return nil, errors.New("user not found")
+	// }
 
 	var name, weburl, method string
 	name, _ = url.QueryUnescape(input.Name)
@@ -271,10 +271,10 @@ func (r *mutationResolver) ModifyHook(ctx context.Context, input *model.HookInpu
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser dbModels.DbUser
-	if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
-		return nil, errors.New("user not found")
-	}
+	// var jwtDbUser dbModels.DbUser
+	// if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	// 	return nil, errors.New("user not found")
+	// }
 
 	var dbHook dbModels.Hook
 	hookId, err := uuid.Parse(id)
@@ -318,10 +318,10 @@ func (r *mutationResolver) DeleteHook(ctx context.Context, id string) (*model.Bo
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser dbModels.DbUser
-	if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
-		return nil, errors.New("user not found")
-	}
+	// var jwtDbUser dbModels.DbUser
+	// if err := db.DB.Where(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	// 	return nil, errors.New("user not found")
+	// }
 
 	var dbHook dbModels.Hook
 	if err := db.DB.Find(&dbHook, dbModels.Hook{ID: uuid.Must(uuid.Parse(id))}).Error; err != nil {
@@ -498,10 +498,10 @@ func (r *queryResolver) HookList(ctx context.Context, pagination model.Paginatio
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser dbModels.DbUser
-	if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
-		return nil, errors.New("user not found")
-	}
+	// var jwtDbUser dbModels.DbUser
+	// if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	// 	return nil, errors.New("user not found")
+	// }
 
 	var hooks []dbModels.Hook
 	var count int64
@@ -537,10 +537,10 @@ func (r *queryResolver) Hook(ctx context.Context, id string) (*model.Hook, error
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser dbModels.DbUser
-	if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
-		return nil, errors.New("user not found")
-	}
+	// var jwtDbUser dbModels.DbUser
+	// if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	// 	return nil, errors.New("user not found")
+	// }
 
 	var dbHook dbModels.Hook
 	hID, err := uuid.Parse(id)
@@ -562,12 +562,38 @@ func (r *queryResolver) HookLogList(ctx context.Context, pagination model.Pagina
 		return nil, errors.New("authorization failed")
 	}
 
-	var jwtDbUser dbModels.DbUser
-	if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
-		return nil, errors.New("user not found")
+	// var jwtDbUser dbModels.DbUser
+	// if err := db.DB.Model(dbModels.DbUser{UserName: userName}).Find(&jwtDbUser).Error; err != nil {
+	// 	return nil, errors.New("user not found")
+	// }
+
+	var logs []dbModels.HookLog
+	var count int64
+	err := db.DB.Scopes(helpers.Paginate(pagination.PageIndex, pagination.PerPage)).
+		Order("create_time DESC").
+		Find(&logs).Error
+
+	if err != nil {
+		return nil, errors.New("logs not found")
 	}
 
-	panic(fmt.Errorf("not implemented: HookLogList - hookLogList"))
+	err = db.DB.Model(dbModels.HookLog{}).Count(&count).Error
+	if err != nil {
+		return nil, errors.New("logs not found")
+	}
+
+	var rtLogs []*model.HookLog
+	for _, l := range logs {
+		rtLogs = append(rtLogs, l.ToGQLHookLog())
+	}
+
+	pageInfo := helpers.GetPageInfo(pagination.PageIndex, pagination.PerPage, int(count))
+
+	return &model.HookLogListResult{
+		TotalCount: int(count),
+		Items:      rtLogs,
+		PageInfo:   &pageInfo,
+	}, nil
 }
 
 // DeployLogList is the resolver for the deployLogList field.
@@ -576,7 +602,35 @@ func (r *queryResolver) DeployLogList(ctx context.Context, pagination model.Pagi
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
 	}
-	panic(fmt.Errorf("not implemented: DeployLogList - deployLogList"))
+
+	var logs []dbModels.DeployLog
+	var count int64
+
+	err := db.DB.Scopes(helpers.Paginate(pagination.PageIndex, pagination.PerPage)).
+		Order("create_time DESC").
+		Find(&logs).Error
+
+	if err != nil {
+		return nil, errors.New("logs not found")
+	}
+
+	err = db.DB.Model(dbModels.DeployLog{}).Count(&count).Error
+	if err != nil {
+		return nil, errors.New("logs not found")
+	}
+
+	var rtLogs []*model.DeployLog
+	for _, l := range logs {
+		rtLogs = append(rtLogs, l.ToGQLDeployLog())
+	}
+
+	pageInfo := helpers.GetPageInfo(pagination.PageIndex, pagination.PerPage, int(count))
+
+	return &model.DeployLogListResult{
+		TotalCount: int(count),
+		Items:      rtLogs,
+		PageInfo:   &pageInfo,
+	}, nil
 }
 
 // DeployLog is the resolver for the deployLog field.
@@ -585,7 +639,16 @@ func (r *queryResolver) DeployLog(ctx context.Context, id string) (*model.Deploy
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
 	}
-	panic(fmt.Errorf("not implemented: DeployLog - deployLog"))
+
+	var dbDeployLog dbModels.DeployLog
+	dlID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid deploy log id")
+	}
+	if err := db.DB.Find(&dbDeployLog, dbModels.DeployLog{ID: uuid.Must(dlID, err)}).Error; err != nil {
+		return nil, errors.New("deploy log not found")
+	}
+	return dbDeployLog.ToGQLDeployLog(), nil
 }
 
 // TriggerHook is the resolver for the triggerHook field.
@@ -594,6 +657,9 @@ func (r *queryResolver) TriggerHook(ctx context.Context, id string) (*model.Bool
 	if len(userName) == 0 {
 		return nil, errors.New("authorization failed")
 	}
+
+	// TODO
+
 	panic(fmt.Errorf("not implemented: TriggerHook - triggerHook"))
 }
 
