@@ -5,6 +5,7 @@ import (
 
 	"crispypod.com/crispypod-backend/controllers"
 	"crispypod.com/crispypod-backend/db"
+	eventhandler "crispypod.com/crispypod-backend/eventHandler"
 	"crispypod.com/crispypod-backend/graph"
 	"crispypod.com/crispypod-backend/helpers"
 	"crispypod.com/crispypod-backend/rssfeed"
@@ -15,14 +16,17 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
+	"github.com/gookit/event"
 )
 
 func main() {
 	helpers.CheckEnvVariables()
 	db.ConnectDatabase()
 
-	// // event dispatcher
-	// defer event.CloseWait()
+	// event dispatcher
+	defer event.CloseWait()
+
+	eventhandler.RegisterEvent()
 
 	r := gin.Default()
 	r.Use(helpers.JWTMiddleWare())
@@ -48,7 +52,9 @@ func main() {
 	r.POST("/api/thumbnail", controllers.ThumbnailUpload)
 	r.GET("/api/thumbnail/:fileName", controllers.GetThumbnailFile)
 
-	rssfeed.GenerateRSSFeed()
+	r.POST("/api/deployLog", controllers.DeployLogUpload)
+
+	go rssfeed.GenerateRSSFeed()
 
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(1).Day().At("0:00").Do(schedule.ClearAudioFile)

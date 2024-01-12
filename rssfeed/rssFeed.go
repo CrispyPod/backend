@@ -22,7 +22,7 @@ func GenerateRSSFeed() {
 	}
 
 	var episodes []dbModels.Episode
-	if err := db.DB.Find(&episodes, dbModels.Episode{EpisodeStatus: dbModels.EpisodeStatus_Published}); err != nil {
+	if err := db.DB.Find(&episodes, dbModels.Episode{EpisodeStatus: dbModels.EpisodeStatus_Published}).Error; err != nil {
 		fmt.Println("Failed to get episodes.")
 	}
 

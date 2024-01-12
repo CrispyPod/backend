@@ -76,13 +76,14 @@ type HookListResult struct {
 }
 
 type HookLog struct {
-	ID         string `json:"id"`
-	HookID     string `json:"hookID"`
-	Hook       *Hook  `json:"hook"`
-	Status     int    `json:"status"`
-	Response   string `json:"response"`
-	CreateTime int    `json:"createTime"`
-	Duration   int    `json:"duration"`
+	ID             string `json:"id"`
+	HookID         string `json:"hookID"`
+	Hook           *Hook  `json:"hook"`
+	Status         int    `json:"status"`
+	ResponseHeader string `json:"responseHeader"`
+	ResponseBody   string `json:"responseBody"`
+	CreateTime     int    `json:"createTime"`
+	Duration       int    `json:"duration"`
 }
 
 type HookLogListResult struct {

@@ -8,17 +8,17 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/url"
 	"strings"
 	"time"
 
 	"crispypod.com/crispypod-backend/db"
 	"crispypod.com/crispypod-backend/dbModels"
+	eventhandler "crispypod.com/crispypod-backend/eventHandler"
 	"crispypod.com/crispypod-backend/graph/model"
 	"crispypod.com/crispypod-backend/helpers"
-	"crispypod.com/crispypod-backend/rssfeed"
 	"github.com/google/uuid"
+	"github.com/gookit/event"
 )
 
 // CreateEpisode is the resolver for the createEpisode field.
@@ -67,7 +67,6 @@ func (r *mutationResolver) CreateEpisode(ctx context.Context, input *model.NewEp
 	}
 
 	db.DB.Create(newEpisode)
-	go rssfeed.GenerateRSSFeed()
 
 	return newEpisode.ToGQLEpisode(), nil
 }
@@ -98,6 +97,7 @@ func (r *mutationResolver) ModifyEpisode(ctx context.Context, id string, input *
 		description, _ := url.QueryUnescape(*input.Description)
 		dbEpisode.Description = description
 	}
+	originStatus := dbEpisode.EpisodeStatus
 
 	if input.EpisodeStatus != nil {
 		dbEpisode.EpisodeStatus = dbModels.EpisodeStatusType(*input.EpisodeStatus)
@@ -124,7 +124,10 @@ func (r *mutationResolver) ModifyEpisode(ctx context.Context, id string, input *
 	}
 
 	db.DB.Save(dbEpisode)
-	go rssfeed.GenerateRSSFeed()
+
+	if originStatus != dbModels.EpisodeStatusType(*input.EpisodeStatus) {
+		event.MustFire(string(eventhandler.EventType_EpisodeVisibilityChanged), event.M{"episode": dbEpisode})
+	}
 
 	return dbEpisode.ToGQLEpisode(), nil
 }
@@ -158,7 +161,8 @@ func (r *mutationResolver) ModifySiteConfig(ctx context.Context, input *model.Si
 	}
 
 	db.DB.Save(siteConfig)
-	go rssfeed.GenerateRSSFeed()
+
+	event.MustFire(string(eventhandler.EventType_SiteConfigChanged), event.M{"siteConfig": siteConfig})
 
 	return siteConfig.ToGQLSiteConfig(len(userName) != 0), nil
 }
@@ -659,8 +663,45 @@ func (r *queryResolver) TriggerHook(ctx context.Context, id string) (*model.Bool
 	}
 
 	// TODO
+	var dbHook dbModels.Hook
+	hID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid hook id")
+	}
 
-	panic(fmt.Errorf("not implemented: TriggerHook - triggerHook"))
+	if err := db.DB.Find(&dbHook, dbModels.Hook{ID: hID}).Error; err != nil {
+		return nil, errors.New("hook not found")
+	}
+
+	switch dbHook.Trigger {
+	case dbModels.HookTriggerType_EpisodeVisibilityChanged:
+		var episode dbModels.Episode
+		if err := db.DB.First(&episode).Error; err != nil {
+			episode = dbModels.Episode{
+				ID:    uuid.New(),
+				Title: "Test Episode",
+			}
+		}
+		go eventhandler.TriggerHook(dbHook, episode)
+	case dbModels.HookTriggerType_SiteConfigChanged:
+		var siteConfig dbModels.SiteConfig
+		if err := db.DB.First(&siteConfig).Error; err != nil {
+			siteConfig = dbModels.SiteConfig{
+				ID:              uuid.New(),
+				SiteName:        "CrispyPod",
+				SiteDescription: "Super awesome podcast!",
+				SiteUrl:         "https://crispypod.com",
+				SetupComplete:   false,
+			}
+			db.DB.Create(&siteConfig)
+		}
+		go eventhandler.TriggerHook(dbHook, siteConfig)
+		break
+	}
+
+	return &model.BooleanResult{
+		Result: true,
+	}, nil
 }
 
 // Mutation returns MutationResolver implementation.

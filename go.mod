@@ -9,6 +9,7 @@ require (
 	github.com/go-co-op/gocron v1.37.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/uuid v1.5.0
+	github.com/gookit/event v1.1.1
 	github.com/gorilla/feeds v1.1.2
 	github.com/vektah/gqlparser/v2 v2.5.10
 	golang.org/x/crypto v0.17.0

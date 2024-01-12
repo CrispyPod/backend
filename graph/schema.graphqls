@@ -58,7 +58,8 @@ type HookLog {
   hookID: ID!
   hook: Hook!
   status: Int!
-  response: String!
+  responseHeader: String!
+  responseBody: String!
   createTime: Int!
   duration: Int!
 }

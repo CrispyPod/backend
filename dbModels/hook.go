@@ -11,7 +11,7 @@ import (
 type HookTriggerType int
 
 const (
-	HookTriggerType_SiteConfig_Updated       HookTriggerType = 0
+	HookTriggerType_SiteConfigChanged        HookTriggerType = 0
 	HookTriggerType_EpisodeVisibilityChanged HookTriggerType = 1
 )
 
@@ -19,6 +19,7 @@ type Hook struct {
 	ID      uuid.UUID `gorm:"type:uuid;primary_key"`
 	Name    string
 	Trigger HookTriggerType
+	Enabled bool
 
 	WebURL     string
 	Method     string
