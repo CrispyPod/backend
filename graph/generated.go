@@ -92,6 +92,7 @@ type ComplexityRoot struct {
 
 	Hook struct {
 		AppendBody func(childComplexity int) int
+		Enabled    func(childComplexity int) int
 		Headers    func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Method     func(childComplexity int) int
@@ -409,6 +410,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Hook.AppendBody(childComplexity), true
+
+	case "Hook.enabled":
+		if e.complexity.Hook.Enabled == nil {
+			break
+		}
+
+		return e.complexity.Hook.Enabled(childComplexity), true
 
 	case "Hook.headers":
 		if e.complexity.Hook.Headers == nil {
@@ -2656,6 +2664,50 @@ func (ec *executionContext) fieldContext_Hook_trigger(ctx context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Hook_enabled(ctx context.Context, field graphql.CollectedField, obj *model.Hook) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Hook_enabled(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Enabled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Hook_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Hook",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Hook_webURL(ctx context.Context, field graphql.CollectedField, obj *model.Hook) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Hook_webURL(ctx, field)
 	if err != nil {
@@ -2877,6 +2929,8 @@ func (ec *executionContext) fieldContext_HookListResult_items(ctx context.Contex
 				return ec.fieldContext_Hook_name(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
+			case "enabled":
+				return ec.fieldContext_Hook_enabled(ctx, field)
 			case "webURL":
 				return ec.fieldContext_Hook_webURL(ctx, field)
 			case "method":
@@ -3116,6 +3170,8 @@ func (ec *executionContext) fieldContext_HookLog_hook(ctx context.Context, field
 				return ec.fieldContext_Hook_name(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
+			case "enabled":
+				return ec.fieldContext_Hook_enabled(ctx, field)
 			case "webURL":
 				return ec.fieldContext_Hook_webURL(ctx, field)
 			case "method":
@@ -3950,6 +4006,8 @@ func (ec *executionContext) fieldContext_Mutation_createHook(ctx context.Context
 				return ec.fieldContext_Hook_name(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
+			case "enabled":
+				return ec.fieldContext_Hook_enabled(ctx, field)
 			case "webURL":
 				return ec.fieldContext_Hook_webURL(ctx, field)
 			case "method":
@@ -4021,6 +4079,8 @@ func (ec *executionContext) fieldContext_Mutation_modifyHook(ctx context.Context
 				return ec.fieldContext_Hook_name(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
+			case "enabled":
+				return ec.fieldContext_Hook_enabled(ctx, field)
 			case "webURL":
 				return ec.fieldContext_Hook_webURL(ctx, field)
 			case "method":
@@ -4730,6 +4790,8 @@ func (ec *executionContext) fieldContext_Query_hook(ctx context.Context, field g
 				return ec.fieldContext_Hook_name(ctx, field)
 			case "trigger":
 				return ec.fieldContext_Hook_trigger(ctx, field)
+			case "enabled":
+				return ec.fieldContext_Hook_enabled(ctx, field)
 			case "webURL":
 				return ec.fieldContext_Hook_webURL(ctx, field)
 			case "method":
@@ -8254,6 +8316,11 @@ func (ec *executionContext) _Hook(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "trigger":
 			out.Values[i] = ec._Hook_trigger(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "enabled":
+			out.Values[i] = ec._Hook_enabled(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

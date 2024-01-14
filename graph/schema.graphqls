@@ -46,6 +46,7 @@ type Hook {
   id: ID!
   name: String!
   trigger: Int!
+  enabled: Boolean!
 
   webURL: String!
   method: String!

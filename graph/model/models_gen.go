@@ -54,6 +54,7 @@ type Hook struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
 	Trigger    int    `json:"trigger"`
+	Enabled    bool   `json:"enabled"`
 	WebURL     string `json:"webURL"`
 	Method     string `json:"method"`
 	Headers    string `json:"headers"`

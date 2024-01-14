@@ -36,6 +36,7 @@ func (h *Hook) ToGQLHook() *model.Hook {
 		Trigger:    int(h.Trigger),
 		WebURL:     h.WebURL,
 		Method:     h.Method,
+		Enabled:    h.Enabled,
 		Headers:    h.Headers.String,
 		AppendBody: h.AppendBody.String,
 	}
