@@ -129,6 +129,7 @@ type Query {
   hookList(pagination: Pagination!): HookListResult!
   hook(id: ID!): Hook!
   hookLogList(pagination: Pagination!, hookID: ID!): HookLogListResult!
+  hookLog(id: ID!): HookLog!
   deployLogList(pagination: Pagination!): DeployLogListResult!
   deployLog(id: ID!): DeployLog!
   triggerHook(id: ID!): BooleanResult!

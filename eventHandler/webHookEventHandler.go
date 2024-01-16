@@ -33,6 +33,8 @@ func TriggerHook(hook dbModels.Hook, data any) {
 		return
 	}
 
+	fmt.Printf("Triggerint hook %v", hook.ID.String())
+
 	for k, v := range headerMap {
 		req.Header.Add(k, fmt.Sprintf("%v", v))
 	}
@@ -40,7 +42,7 @@ func TriggerHook(hook dbModels.Hook, data any) {
 	dbHookLog := dbModels.HookLog{
 		ID:         uuid.New(),
 		HooksID:    hook.ID,
-		Status:     0,
+		Status:     dbModels.HookLogStatusType_Started,
 		CreateTime: time.Now(),
 	}
 	db.DB.Create(dbHookLog)
@@ -53,6 +55,7 @@ func TriggerHook(hook dbModels.Hook, data any) {
 	}
 
 	dbHookLog.Duration = time.Since(dbHookLog.CreateTime)
+	dbHookLog.Status = dbModels.HookLogStatusType_Finished
 	if headerMarshaled, err := json.Marshal(resp.Header); err != nil {
 		dbHookLog.ResponseHeader = sql.NullString{String: string(headerMarshaled), Valid: true}
 	}

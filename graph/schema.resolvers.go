@@ -300,7 +300,7 @@ func (r *mutationResolver) ModifyHook(ctx context.Context, input *model.HookInpu
 		if !helpers.JsonValidate(headers) {
 			return nil, errors.New("invalid headers, please provide headers in valid json format")
 		}
-		dbHook.Headers.String = headers
+		dbHook.Headers = sql.NullString{String: headers, Valid: true}
 	}
 
 	if input.AppendBody != nil {
@@ -308,7 +308,7 @@ func (r *mutationResolver) ModifyHook(ctx context.Context, input *model.HookInpu
 		if !helpers.JsonValidate(appendBody) {
 			return nil, errors.New("invalid appendBody, please provide appendBody in valid json format")
 		}
-		dbHook.AppendBody.String = appendBody
+		dbHook.AppendBody = sql.NullString{String: appendBody, Valid: true}
 	}
 
 	db.DB.Save(dbHook)
@@ -600,6 +600,27 @@ func (r *queryResolver) HookLogList(ctx context.Context, pagination model.Pagina
 	}, nil
 }
 
+// HookLog is the resolver for the hookLog field.
+func (r *queryResolver) HookLog(ctx context.Context, id string) (*model.HookLog, error) {
+	userName := helpers.JWTFromContext(ctx)
+	if len(userName) == 0 {
+		return nil, errors.New("authorization failed")
+	}
+
+	var dbHookLog dbModels.HookLog
+	hlID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid hookLog id")
+	}
+
+	if err := db.DB.Find(&dbHookLog, dbModels.HookLog{ID: hlID}).Error; err != nil {
+		return nil, errors.New("hookLog not found")
+	}
+
+	return dbHookLog.ToGQLHookLog(), nil
+	// panic(fmt.Errorf("not implemented: HookLog - hookLog"))
+}
+
 // DeployLogList is the resolver for the deployLogList field.
 func (r *queryResolver) DeployLogList(ctx context.Context, pagination model.Pagination) (*model.DeployLogListResult, error) {
 	userName := helpers.JWTFromContext(ctx)
@@ -696,7 +717,6 @@ func (r *queryResolver) TriggerHook(ctx context.Context, id string) (*model.Bool
 			db.DB.Create(&siteConfig)
 		}
 		go eventhandler.TriggerHook(dbHook, siteConfig)
-		break
 	}
 
 	return &model.BooleanResult{

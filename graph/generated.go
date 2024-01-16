@@ -152,6 +152,7 @@ type ComplexityRoot struct {
 		EpisodeList   func(childComplexity int, pagination model.Pagination) int
 		Hook          func(childComplexity int, id string) int
 		HookList      func(childComplexity int, pagination model.Pagination) int
+		HookLog       func(childComplexity int, id string) int
 		HookLogList   func(childComplexity int, pagination model.Pagination, hookID string) int
 		Login         func(childComplexity int, credential model.Credential) int
 		Me            func(childComplexity int) int
@@ -205,6 +206,7 @@ type QueryResolver interface {
 	HookList(ctx context.Context, pagination model.Pagination) (*model.HookListResult, error)
 	Hook(ctx context.Context, id string) (*model.Hook, error)
 	HookLogList(ctx context.Context, pagination model.Pagination, hookID string) (*model.HookLogListResult, error)
+	HookLog(ctx context.Context, id string) (*model.HookLog, error)
 	DeployLogList(ctx context.Context, pagination model.Pagination) (*model.DeployLogListResult, error)
 	DeployLog(ctx context.Context, id string) (*model.DeployLog, error)
 	TriggerHook(ctx context.Context, id string) (*model.BooleanResult, error)
@@ -754,6 +756,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.HookList(childComplexity, args["pagination"].(model.Pagination)), true
 
+	case "Query.hookLog":
+		if e.complexity.Query.HookLog == nil {
+			break
+		}
+
+		args, err := ec.field_Query_hookLog_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.HookLog(childComplexity, args["id"].(string)), true
+
 	case "Query.hookLogList":
 		if e.complexity.Query.HookLogList == nil {
 			break
@@ -1294,6 +1308,21 @@ func (ec *executionContext) field_Query_hookLogList_args(ctx context.Context, ra
 		}
 	}
 	args["hookID"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_hookLog_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -4875,6 +4904,79 @@ func (ec *executionContext) fieldContext_Query_hookLogList(ctx context.Context, 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_hookLogList_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_hookLog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_hookLog(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().HookLog(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.HookLog)
+	fc.Result = res
+	return ec.marshalNHookLog2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐHookLog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_hookLog(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_HookLog_id(ctx, field)
+			case "hookID":
+				return ec.fieldContext_HookLog_hookID(ctx, field)
+			case "hook":
+				return ec.fieldContext_HookLog_hook(ctx, field)
+			case "status":
+				return ec.fieldContext_HookLog_status(ctx, field)
+			case "responseHeader":
+				return ec.fieldContext_HookLog_responseHeader(ctx, field)
+			case "responseBody":
+				return ec.fieldContext_HookLog_responseBody(ctx, field)
+			case "createTime":
+				return ec.fieldContext_HookLog_createTime(ctx, field)
+			case "duration":
+				return ec.fieldContext_HookLog_duration(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type HookLog", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_hookLog_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -8953,6 +9055,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "hookLog":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_hookLog(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "deployLogList":
 			field := field
 
@@ -9797,6 +9921,10 @@ func (ec *executionContext) marshalNHookListResult2ᚖcrispypodᚗcomᚋcrispypo
 	return ec._HookListResult(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNHookLog2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐHookLog(ctx context.Context, sel ast.SelectionSet, v model.HookLog) graphql.Marshaler {
+	return ec._HookLog(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNHookLog2ᚕᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐHookLog(ctx context.Context, sel ast.SelectionSet, v []*model.HookLog) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -9833,6 +9961,16 @@ func (ec *executionContext) marshalNHookLog2ᚕᚖcrispypodᚗcomᚋcrispypodᚑ
 	wg.Wait()
 
 	return ret
+}
+
+func (ec *executionContext) marshalNHookLog2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐHookLog(ctx context.Context, sel ast.SelectionSet, v *model.HookLog) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._HookLog(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNHookLogListResult2crispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐHookLogListResult(ctx context.Context, sel ast.SelectionSet, v model.HookLogListResult) graphql.Marshaler {
