@@ -9,6 +9,7 @@ type Episode {
   description: String!
   episodeStatus: Int
   publishTime: Int
+  namedLink: String!
   thumbnailFileName: String
   thumbnailUploadName: String
   audioFileName: String
@@ -120,7 +121,7 @@ type DashboardInfo {
 
 type Query {
   episodeList(pagination: Pagination!): EpisodeListResult!
-  episode(id: ID!): Episode!
+  episode(id: ID, namedLink: String): Episode!
   userList(pagination: Pagination!): UserListResult!
   login(credential: Credential!): LoginData!
   me: User!

@@ -77,6 +77,7 @@ type ComplexityRoot struct {
 		Description         func(childComplexity int) int
 		EpisodeStatus       func(childComplexity int) int
 		ID                  func(childComplexity int) int
+		NamedLink           func(childComplexity int) int
 		PublishTime         func(childComplexity int) int
 		ThumbnailFileName   func(childComplexity int) int
 		ThumbnailUploadName func(childComplexity int) int
@@ -148,7 +149,7 @@ type ComplexityRoot struct {
 		DashboardInfo func(childComplexity int) int
 		DeployLog     func(childComplexity int, id string) int
 		DeployLogList func(childComplexity int, pagination model.Pagination) int
-		Episode       func(childComplexity int, id string) int
+		Episode       func(childComplexity int, id *string, namedLink *string) int
 		EpisodeList   func(childComplexity int, pagination model.Pagination) int
 		Hook          func(childComplexity int, id string) int
 		HookList      func(childComplexity int, pagination model.Pagination) int
@@ -197,7 +198,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	EpisodeList(ctx context.Context, pagination model.Pagination) (*model.EpisodeListResult, error)
-	Episode(ctx context.Context, id string) (*model.Episode, error)
+	Episode(ctx context.Context, id *string, namedLink *string) (*model.Episode, error)
 	UserList(ctx context.Context, pagination model.Pagination) (*model.UserListResult, error)
 	Login(ctx context.Context, credential model.Credential) (*model.LoginData, error)
 	Me(ctx context.Context) (*model.User, error)
@@ -349,6 +350,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Episode.ID(childComplexity), true
+
+	case "Episode.namedLink":
+		if e.complexity.Episode.NamedLink == nil {
+			break
+		}
+
+		return e.complexity.Episode.NamedLink(childComplexity), true
 
 	case "Episode.publishTime":
 		if e.complexity.Episode.PublishTime == nil {
@@ -718,7 +726,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Episode(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.Episode(childComplexity, args["id"].(*string), args["namedLink"].(*string)), true
 
 	case "Query.episodeList":
 		if e.complexity.Query.EpisodeList == nil {
@@ -1260,15 +1268,24 @@ func (ec *executionContext) field_Query_episodeList_args(ctx context.Context, ra
 func (ec *executionContext) field_Query_episode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 *string
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["id"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["namedLink"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("namedLink"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["namedLink"] = arg1
 	return args, nil
 }
 
@@ -2137,6 +2154,50 @@ func (ec *executionContext) fieldContext_Episode_publishTime(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Episode_namedLink(ctx context.Context, field graphql.CollectedField, obj *model.Episode) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Episode_namedLink(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NamedLink, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Episode_namedLink(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Episode",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Episode_thumbnailFileName(ctx context.Context, field graphql.CollectedField, obj *model.Episode) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Episode_thumbnailFileName(ctx, field)
 	if err != nil {
@@ -2451,6 +2512,8 @@ func (ec *executionContext) fieldContext_EpisodeListResult_items(ctx context.Con
 				return ec.fieldContext_Episode_episodeStatus(ctx, field)
 			case "publishTime":
 				return ec.fieldContext_Episode_publishTime(ctx, field)
+			case "namedLink":
+				return ec.fieldContext_Episode_namedLink(ctx, field)
 			case "thumbnailFileName":
 				return ec.fieldContext_Episode_thumbnailFileName(ctx, field)
 			case "thumbnailUploadName":
@@ -3684,6 +3747,8 @@ func (ec *executionContext) fieldContext_Mutation_createEpisode(ctx context.Cont
 				return ec.fieldContext_Episode_episodeStatus(ctx, field)
 			case "publishTime":
 				return ec.fieldContext_Episode_publishTime(ctx, field)
+			case "namedLink":
+				return ec.fieldContext_Episode_namedLink(ctx, field)
 			case "thumbnailFileName":
 				return ec.fieldContext_Episode_thumbnailFileName(ctx, field)
 			case "thumbnailUploadName":
@@ -3765,6 +3830,8 @@ func (ec *executionContext) fieldContext_Mutation_modifyEpisode(ctx context.Cont
 				return ec.fieldContext_Episode_episodeStatus(ctx, field)
 			case "publishTime":
 				return ec.fieldContext_Episode_publishTime(ctx, field)
+			case "namedLink":
+				return ec.fieldContext_Episode_namedLink(ctx, field)
 			case "thumbnailFileName":
 				return ec.fieldContext_Episode_thumbnailFileName(ctx, field)
 			case "thumbnailUploadName":
@@ -4360,7 +4427,7 @@ func (ec *executionContext) _Query_episode(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Episode(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().Episode(rctx, fc.Args["id"].(*string), fc.Args["namedLink"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4397,6 +4464,8 @@ func (ec *executionContext) fieldContext_Query_episode(ctx context.Context, fiel
 				return ec.fieldContext_Episode_episodeStatus(ctx, field)
 			case "publishTime":
 				return ec.fieldContext_Episode_publishTime(ctx, field)
+			case "namedLink":
+				return ec.fieldContext_Episode_namedLink(ctx, field)
 			case "thumbnailFileName":
 				return ec.fieldContext_Episode_thumbnailFileName(ctx, field)
 			case "thumbnailUploadName":
@@ -8311,6 +8380,11 @@ func (ec *executionContext) _Episode(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Episode_episodeStatus(ctx, field, obj)
 		case "publishTime":
 			out.Values[i] = ec._Episode_publishTime(ctx, field, obj)
+		case "namedLink":
+			out.Values[i] = ec._Episode_namedLink(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "thumbnailFileName":
 			out.Values[i] = ec._Episode_thumbnailFileName(ctx, field, obj)
 		case "thumbnailUploadName":
@@ -10442,6 +10516,22 @@ func (ec *executionContext) marshalOHookLog2ᚖcrispypodᚗcomᚋcrispypodᚑbac
 		return graphql.Null
 	}
 	return ec._HookLog(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalID(*v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

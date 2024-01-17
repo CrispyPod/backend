@@ -8,6 +8,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -44,6 +45,16 @@ func (r *mutationResolver) CreateEpisode(ctx context.Context, input *model.NewEp
 		EpisodeStatus: dbModels.EpisodeStatus_Draft,
 		UserID:        jwtDbUser.ID,
 		CreateTime:    time.Now(),
+	}
+	newEpisode.GenerateNamedLink()
+	// check if generated named link was existed
+	foundExistedEpisode := true
+	for foundExistedEpisode {
+		var nameLinkEp dbModels.Episode
+		if err := db.DB.First(&nameLinkEp, "named_link = ?", newEpisode.NamedLink).Error; err != nil {
+			break
+		}
+		newEpisode.NamedLink = fmt.Sprintf("%s-", newEpisode.NamedLink)
 	}
 
 	if input.AudioFileName != nil {
@@ -91,6 +102,17 @@ func (r *mutationResolver) ModifyEpisode(ctx context.Context, id string, input *
 	if input.Title != nil {
 		title, _ := url.QueryUnescape(*input.Title)
 		dbEpisode.Title = title
+		dbEpisode.GenerateNamedLink()
+		// check if generated named link was existed
+		foundExistedEpisode := true
+		for foundExistedEpisode {
+			var existedEpisode dbModels.Episode
+			if err := db.DB.First(&existedEpisode, "named_link = ? AND id <> ?", dbEpisode.NamedLink, dbEpisode.ID.String()).Error; err != nil {
+				break
+			}
+			dbEpisode.NamedLink = fmt.Sprintf("%s-", dbEpisode.NamedLink)
+		}
+
 	}
 
 	if input.Description != nil {
@@ -382,16 +404,28 @@ func (r *queryResolver) EpisodeList(ctx context.Context, pagination model.Pagina
 }
 
 // Episode is the resolver for the episode field.
-func (r *queryResolver) Episode(ctx context.Context, id string) (*model.Episode, error) {
+func (r *queryResolver) Episode(ctx context.Context, id *string, namedLink *string) (*model.Episode, error) {
 	userName := helpers.JWTFromContext(ctx)
 	var dbEpisode dbModels.Episode
-	epId, err := uuid.Parse(id)
-	if err != nil {
-		return nil, errors.New("invalid episode id")
+	if id == nil && namedLink == nil {
+		return nil, errors.New("invalid parameter")
 	}
-	if err := db.DB.Find(&dbEpisode, dbModels.Episode{ID: uuid.Must(epId, err)}).Error; err != nil {
-		return nil, errors.New("episode not found")
+
+	if id != nil {
+		epId, err := uuid.Parse(*id)
+		if err != nil {
+			return nil, errors.New("invalid episode id")
+		}
+		if err := db.DB.Find(&dbEpisode, dbModels.Episode{ID: uuid.Must(epId, err)}).Error; err != nil {
+			return nil, errors.New("episode not found")
+		}
 	}
+	if namedLink != nil {
+		if err := db.DB.Find(&dbEpisode, dbModels.Episode{NamedLink: *namedLink}).Error; err != nil {
+			return nil, errors.New("episode not found")
+		}
+	}
+
 	if len(userName) == 0 && dbEpisode.EpisodeStatus == dbModels.EpisodeStatus_Draft {
 		// check if episode status was draft, if so, we will not return it while user has not logged in
 		return nil, errors.New("episode not accessable")

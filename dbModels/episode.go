@@ -2,6 +2,7 @@ package dbModels
 
 import (
 	"database/sql"
+	"regexp"
 	"time"
 
 	"crispypod.com/crispypod-backend/graph/model"
@@ -22,6 +23,7 @@ type Episode struct {
 	PublishTime   sql.NullTime
 	Description   string
 	EpisodeStatus EpisodeStatusType
+	NamedLink     string `gorm:"uniqueIndex"`
 
 	ThumbnailFileName   sql.NullString
 	ThumbnailUploadName sql.NullString
@@ -43,6 +45,7 @@ func (e *Episode) ToGQLEpisode() *model.Episode {
 		CreateTime:    int(e.CreateTime.Unix()),
 		Description:   e.Description,
 		EpisodeStatus: es,
+		NamedLink:     e.NamedLink,
 		// PublishTime:         pt,
 		ThumbnailFileName:   &e.ThumbnailFileName.String,
 		ThumbnailUploadName: &e.ThumbnailUploadName.String,
@@ -63,4 +66,9 @@ func (e *Episode) ToGQLEpisode() *model.Episode {
 	}
 
 	return &rtEpisode
+}
+
+func (e *Episode) GenerateNamedLink() {
+	rexp := regexp.MustCompile(`[\\?\\!_.,: ]`)
+	e.NamedLink = rexp.ReplaceAllString(e.Title, "-")
 }
