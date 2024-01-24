@@ -49,15 +49,16 @@ func main() {
 	r.POST("/api/audioFile", controllers.AudioFileUpload)
 	r.GET("/api/audioFile/:fileName", controllers.GetAudioFile)
 
-	r.POST("/api/thumbnail", controllers.ThumbnailUpload)
-	r.GET("/api/thumbnail/:fileName", controllers.GetThumbnailFile)
+	r.POST("/api/imageFile", controllers.ImageFileUpload)
+	r.GET("/api/imageFile/:fileName", controllers.GetImageFile)
+	r.POST("/api/imageFile/upload", controllers.UploadFile)
 
 	r.POST("/api/deployLog", controllers.DeployLogUpload)
 
 	go rssfeed.GenerateRSSFeed()
 
 	s := gocron.NewScheduler(time.UTC)
-	s.Every(1).Day().At("0:00").Do(schedule.ClearAudioFile)
+	s.Every(1).Day().At("0:00").Do(schedule.ClearFiles)
 	s.StartAsync()
 
 	r.Run()

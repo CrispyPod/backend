@@ -15,7 +15,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const ThumbnailFolder = "Thumbnail"
+const ThumbnailFolder = "ImageFile"
 
 var acceptedImageFormat []string = []string{
 	"jpeg",
@@ -23,7 +23,7 @@ var acceptedImageFormat []string = []string{
 	"png",
 }
 
-func ThumbnailUpload(c *gin.Context) {
+func ImageFileUpload(c *gin.Context) {
 	userName := helpers.JWTFromContext(c.Request.Context())
 	if len(userName) == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Please login"})
@@ -75,7 +75,48 @@ func ThumbnailUpload(c *gin.Context) {
 	})
 }
 
-func GetThumbnailFile(c *gin.Context) {
+func UploadFile(c *gin.Context) {
+	userName := helpers.JWTFromContext(c.Request.Context())
+	if len(userName) == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Please login"})
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil || file == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "error fetching file"})
+	}
+
+	fileNameSplited := strings.Split(file.Filename, ".")
+	fileExt := strings.ToLower(fileNameSplited[len(fileNameSplited)-1])
+	if !slices.Contains(acceptedImageFormat, fileExt) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported audio file format"})
+	}
+
+	savedFileName := uuid.New().String() + "." + fileExt
+	fileFolder := filepath.Join(FolderPath, ThumbnailFolder)
+	filePath := filepath.Join(fileFolder, savedFileName)
+
+	if _, err := os.Stat(FolderPath); os.IsNotExist(err) {
+		if err := os.Mkdir(FolderPath, os.ModePerm); err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Failed to create folder"})
+		}
+	}
+
+	if _, err := os.Stat(fileFolder); os.IsNotExist(err) {
+		if err := os.Mkdir(fileFolder, os.ModePerm); err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Failed to create folder"})
+		}
+	}
+
+	c.SaveUploadedFile(file, filePath)
+
+	c.JSON(http.StatusOK, gin.H{
+		"fileName": savedFileName,
+	})
+
+}
+
+func GetImageFile(c *gin.Context) {
 	fileName := c.Param("fileName")
 	thumbnailFilePath := filepath.Join(FolderPath, ThumbnailFolder, fileName)
 	if _, err := os.Stat(thumbnailFilePath); os.IsNotExist(err) {

@@ -131,18 +131,22 @@ type Pagination struct {
 }
 
 type SiteConfig struct {
-	ID              string `json:"id"`
-	SiteName        string `json:"siteName"`
-	SiteDescription string `json:"siteDescription"`
-	SiteURL         string `json:"siteUrl"`
-	SetupComplete   bool   `json:"setupComplete"`
+	ID               string `json:"id"`
+	SiteName         string `json:"siteName"`
+	SiteDescription  string `json:"siteDescription"`
+	SiteURL          string `json:"siteUrl"`
+	SetupComplete    bool   `json:"setupComplete"`
+	SiteIconFile     string `json:"siteIconFile"`
+	DefaultThumbnail string `json:"defaultThumbnail"`
 }
 
 type SiteConfigInput struct {
-	SiteName        *string `json:"siteName,omitempty"`
-	SiteDescription *string `json:"siteDescription,omitempty"`
-	SiteURL         *string `json:"siteUrl,omitempty"`
-	SetupComplete   *bool   `json:"setupComplete,omitempty"`
+	SiteName         *string `json:"siteName,omitempty"`
+	SiteDescription  *string `json:"siteDescription,omitempty"`
+	SiteURL          *string `json:"siteUrl,omitempty"`
+	SetupComplete    *bool   `json:"setupComplete,omitempty"`
+	SiteIconFile     *string `json:"siteIconFile,omitempty"`
+	DefaultThumbnail *string `json:"defaultThumbnail,omitempty"`
 }
 
 type User struct {

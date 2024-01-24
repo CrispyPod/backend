@@ -163,11 +163,13 @@ type ComplexityRoot struct {
 	}
 
 	SiteConfig struct {
-		ID              func(childComplexity int) int
-		SetupComplete   func(childComplexity int) int
-		SiteDescription func(childComplexity int) int
-		SiteName        func(childComplexity int) int
-		SiteURL         func(childComplexity int) int
+		DefaultThumbnail func(childComplexity int) int
+		ID               func(childComplexity int) int
+		SetupComplete    func(childComplexity int) int
+		SiteDescription  func(childComplexity int) int
+		SiteIconFile     func(childComplexity int) int
+		SiteName         func(childComplexity int) int
+		SiteURL          func(childComplexity int) int
 	}
 
 	User struct {
@@ -838,6 +840,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.UserList(childComplexity, args["pagination"].(model.Pagination)), true
 
+	case "SiteConfig.defaultThumbnail":
+		if e.complexity.SiteConfig.DefaultThumbnail == nil {
+			break
+		}
+
+		return e.complexity.SiteConfig.DefaultThumbnail(childComplexity), true
+
 	case "SiteConfig.id":
 		if e.complexity.SiteConfig.ID == nil {
 			break
@@ -858,6 +867,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SiteConfig.SiteDescription(childComplexity), true
+
+	case "SiteConfig.siteIconFile":
+		if e.complexity.SiteConfig.SiteIconFile == nil {
+			break
+		}
+
+		return e.complexity.SiteConfig.SiteIconFile(childComplexity), true
 
 	case "SiteConfig.siteName":
 		if e.complexity.SiteConfig.SiteName == nil {
@@ -3911,6 +3927,10 @@ func (ec *executionContext) fieldContext_Mutation_modifySiteConfig(ctx context.C
 				return ec.fieldContext_SiteConfig_siteUrl(ctx, field)
 			case "setupComplete":
 				return ec.fieldContext_SiteConfig_setupComplete(ctx, field)
+			case "siteIconFile":
+				return ec.fieldContext_SiteConfig_siteIconFile(ctx, field)
+			case "defaultThumbnail":
+				return ec.fieldContext_SiteConfig_defaultThumbnail(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SiteConfig", field.Name)
 		},
@@ -4725,6 +4745,10 @@ func (ec *executionContext) fieldContext_Query_siteConfig(ctx context.Context, f
 				return ec.fieldContext_SiteConfig_siteUrl(ctx, field)
 			case "setupComplete":
 				return ec.fieldContext_SiteConfig_setupComplete(ctx, field)
+			case "siteIconFile":
+				return ec.fieldContext_SiteConfig_siteIconFile(ctx, field)
+			case "defaultThumbnail":
+				return ec.fieldContext_SiteConfig_defaultThumbnail(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SiteConfig", field.Name)
 		},
@@ -5585,6 +5609,94 @@ func (ec *executionContext) fieldContext_SiteConfig_setupComplete(ctx context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SiteConfig_siteIconFile(ctx context.Context, field graphql.CollectedField, obj *model.SiteConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SiteConfig_siteIconFile(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SiteIconFile, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SiteConfig_siteIconFile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SiteConfig",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SiteConfig_defaultThumbnail(ctx context.Context, field graphql.CollectedField, obj *model.SiteConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SiteConfig_defaultThumbnail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DefaultThumbnail, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SiteConfig_defaultThumbnail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SiteConfig",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8065,7 +8177,7 @@ func (ec *executionContext) unmarshalInputSiteConfigInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"siteName", "siteDescription", "siteUrl", "setupComplete"}
+	fieldsInOrder := [...]string{"siteName", "siteDescription", "siteUrl", "setupComplete", "siteIconFile", "defaultThumbnail"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8100,6 +8212,20 @@ func (ec *executionContext) unmarshalInputSiteConfigInput(ctx context.Context, o
 				return it, err
 			}
 			it.SetupComplete = data
+		case "siteIconFile":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("siteIconFile"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SiteIconFile = data
+		case "defaultThumbnail":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("defaultThumbnail"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DefaultThumbnail = data
 		}
 	}
 
@@ -9281,6 +9407,16 @@ func (ec *executionContext) _SiteConfig(ctx context.Context, sel ast.SelectionSe
 			}
 		case "setupComplete":
 			out.Values[i] = ec._SiteConfig_setupComplete(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "siteIconFile":
+			out.Values[i] = ec._SiteConfig_siteIconFile(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "defaultThumbnail":
+			out.Values[i] = ec._SiteConfig_defaultThumbnail(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

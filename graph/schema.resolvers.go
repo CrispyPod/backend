@@ -182,6 +182,20 @@ func (r *mutationResolver) ModifySiteConfig(ctx context.Context, input *model.Si
 		siteConfig.SetupComplete = true
 	}
 
+	if input.DefaultThumbnail != nil {
+		siteConfig.DefaultThumbnail = sql.NullString{
+			String: *input.DefaultThumbnail,
+			Valid:  true,
+		}
+	}
+
+	if input.SiteIconFile != nil {
+		siteConfig.SiteIconFile = sql.NullString{
+			String: *input.SiteIconFile,
+			Valid:  true,
+		}
+	}
+
 	db.DB.Save(siteConfig)
 
 	event.MustFire(string(eventhandler.EventType_SiteConfigChanged), event.M{"siteConfig": siteConfig})

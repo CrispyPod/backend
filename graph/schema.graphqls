@@ -33,6 +33,8 @@ type SiteConfig {
   siteDescription: String!
   siteUrl: String!
   setupComplete: Boolean!
+  siteIconFile: String!
+  defaultThumbnail: String!
 }
 
 type DeployLog {
@@ -163,6 +165,8 @@ input SiteConfigInput {
   siteDescription: String
   siteUrl: String
   setupComplete: Boolean
+  siteIconFile: String
+  defaultThumbnail: String
 }
 
 input UserInput {
