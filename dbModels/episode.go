@@ -46,11 +46,27 @@ func (e *Episode) ToGQLEpisode() *model.Episode {
 		Description:   e.Description,
 		EpisodeStatus: es,
 		NamedLink:     e.NamedLink,
-		// PublishTime:         pt,
-		ThumbnailFileName:   &e.ThumbnailFileName.String,
-		ThumbnailUploadName: &e.ThumbnailUploadName.String,
-		AudioFileName:       &e.AudioFileName.String,
-		AudioFileUploadName: &e.AudioFileUploadName.String,
+		// // PublishTime:         pt,
+		// ThumbnailFileName:   &e.ThumbnailFileName.String,
+		// ThumbnailUploadName: &e.ThumbnailUploadName.String,
+		// AudioFileName:       &e.AudioFileName.String,
+		// AudioFileUploadName: &e.AudioFileUploadName.String,
+	}
+
+	if e.ThumbnailFileName.Valid {
+		rtEpisode.ThumbnailFileName = &e.ThumbnailFileName.String
+	}
+
+	if e.ThumbnailUploadName.Valid {
+		rtEpisode.ThumbnailUploadName = &e.ThumbnailUploadName.String
+	}
+
+	if e.AudioFileName.Valid {
+		rtEpisode.AudioFileName = &e.AudioFileName.String
+	}
+
+	if e.AudioFileUploadName.Valid {
+		rtEpisode.AudioFileUploadName = &e.AudioFileUploadName.String
 	}
 
 	if e.PublishTime.Valid {
