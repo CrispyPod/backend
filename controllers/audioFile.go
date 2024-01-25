@@ -50,11 +50,6 @@ func AudioFileUpload(c *gin.Context) {
 		return
 	}
 
-	if dbEpisode.EpisodeStatus != dbModels.EpisodeStatus_Published {
-		c.JSON(http.StatusForbidden, gin.H{"error": "error fetching file"})
-		return
-	}
-
 	file, err := c.FormFile("file")
 
 	if err != nil || file == nil {
