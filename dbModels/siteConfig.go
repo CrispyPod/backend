@@ -2,6 +2,7 @@ package dbModels
 
 import (
 	"database/sql"
+	"strings"
 
 	"crispypod.com/crispypod-backend/graph/model"
 	"github.com/google/uuid"
@@ -18,6 +19,9 @@ type SiteConfig struct {
 }
 
 func (siteConfig *SiteConfig) ToGQLSiteConfig(includeSetupComplete bool) *model.SiteConfig {
+	iconStr := strings.Clone(siteConfig.SiteIconFile.String)
+	thumbnailStr := strings.Clone(siteConfig.DefaultThumbnail.String)
+
 	if includeSetupComplete {
 		return &model.SiteConfig{
 			ID:               siteConfig.ID.String(),
@@ -25,8 +29,8 @@ func (siteConfig *SiteConfig) ToGQLSiteConfig(includeSetupComplete bool) *model.
 			SiteDescription:  siteConfig.SiteDescription,
 			SiteURL:          siteConfig.SiteUrl,
 			SetupComplete:    siteConfig.SetupComplete,
-			SiteIconFile:     siteConfig.SiteIconFile.String,
-			DefaultThumbnail: siteConfig.DefaultThumbnail.String,
+			SiteIconFile:     iconStr,
+			DefaultThumbnail: thumbnailStr,
 		}
 	} else {
 		return &model.SiteConfig{
@@ -34,8 +38,8 @@ func (siteConfig *SiteConfig) ToGQLSiteConfig(includeSetupComplete bool) *model.
 			SiteName:         siteConfig.SiteName,
 			SiteDescription:  siteConfig.SiteDescription,
 			SiteURL:          siteConfig.SiteUrl,
-			SiteIconFile:     siteConfig.SiteIconFile.String,
-			DefaultThumbnail: siteConfig.DefaultThumbnail.String,
+			SiteIconFile:     iconStr,
+			DefaultThumbnail: thumbnailStr,
 		}
 	}
 

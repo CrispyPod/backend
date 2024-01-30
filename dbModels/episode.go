@@ -3,6 +3,7 @@ package dbModels
 import (
 	"database/sql"
 	"regexp"
+	"strings"
 	"time"
 
 	"crispypod.com/crispypod-backend/graph/model"
@@ -46,27 +47,26 @@ func (e *Episode) ToGQLEpisode() *model.Episode {
 		Description:   e.Description,
 		EpisodeStatus: es,
 		NamedLink:     e.NamedLink,
-		// // PublishTime:         pt,
-		// ThumbnailFileName:   &e.ThumbnailFileName.String,
-		// ThumbnailUploadName: &e.ThumbnailUploadName.String,
-		// AudioFileName:       &e.AudioFileName.String,
-		// AudioFileUploadName: &e.AudioFileUploadName.String,
 	}
 
 	if e.ThumbnailFileName.Valid {
-		rtEpisode.ThumbnailFileName = &e.ThumbnailFileName.String
+		strPtr := strings.Clone(e.ThumbnailFileName.String)
+		rtEpisode.ThumbnailFileName = &strPtr
 	}
 
 	if e.ThumbnailUploadName.Valid {
-		rtEpisode.ThumbnailUploadName = &e.ThumbnailUploadName.String
+		strPtr := strings.Clone(e.ThumbnailUploadName.String)
+		rtEpisode.ThumbnailUploadName = &strPtr
 	}
 
 	if e.AudioFileName.Valid {
-		rtEpisode.AudioFileName = &e.AudioFileName.String
+		strPtr := strings.Clone(e.AudioFileName.String)
+		rtEpisode.AudioFileName = &strPtr
 	}
 
 	if e.AudioFileUploadName.Valid {
-		rtEpisode.AudioFileUploadName = &e.AudioFileUploadName.String
+		strPtr := strings.Clone(e.AudioFileUploadName.String)
+		rtEpisode.AudioFileUploadName = &strPtr
 	}
 
 	if e.PublishTime.Valid {

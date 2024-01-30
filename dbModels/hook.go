@@ -2,6 +2,7 @@ package dbModels
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 
 	"crispypod.com/crispypod-backend/graph/model"
@@ -30,6 +31,8 @@ type Hook struct {
 }
 
 func (h *Hook) ToGQLHook() *model.Hook {
+	headerStr := strings.Clone(h.Headers.String)
+	bodyStr := strings.Clone(h.AppendBody.String)
 	rtHook := model.Hook{
 		ID:         h.ID.String(),
 		Name:       h.Name,
@@ -37,8 +40,8 @@ func (h *Hook) ToGQLHook() *model.Hook {
 		WebURL:     h.WebURL,
 		Method:     h.Method,
 		Enabled:    h.Enabled,
-		Headers:    h.Headers.String,
-		AppendBody: h.AppendBody.String,
+		Headers:    headerStr,
+		AppendBody: bodyStr,
 	}
 
 	return &rtHook

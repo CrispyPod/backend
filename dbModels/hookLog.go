@@ -2,6 +2,7 @@ package dbModels
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 
 	"crispypod.com/crispypod-backend/graph/model"
@@ -27,12 +28,14 @@ type HookLog struct {
 }
 
 func (l *HookLog) ToGQLHookLog() *model.HookLog {
+	headerStr := strings.Clone(l.ResponseHeader.String)
+	bodyStr := strings.Clone(l.ResponseBody.String)
 	rtHookLog := model.HookLog{
 		ID:             l.ID.String(),
 		HookID:         l.HooksID.String(),
 		Status:         int(l.Status),
-		ResponseHeader: l.ResponseHeader.String,
-		ResponseBody:   l.ResponseBody.String,
+		ResponseHeader: headerStr,
+		ResponseBody:   bodyStr,
 		CreateTime:     int(l.CreateTime.Unix()),
 		Duration:       int(l.Duration),
 	}
