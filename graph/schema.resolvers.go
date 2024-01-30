@@ -121,10 +121,6 @@ func (r *mutationResolver) ModifyEpisode(ctx context.Context, id string, input *
 	}
 	originStatus := dbEpisode.EpisodeStatus
 
-	if input.EpisodeStatus != nil {
-		dbEpisode.EpisodeStatus = dbModels.EpisodeStatusType(*input.EpisodeStatus)
-	}
-
 	if input.AudioFileName != nil {
 		dbEpisode.AudioFileName = sql.NullString{String: *input.AudioFileName, Valid: true}
 	}
@@ -143,6 +139,13 @@ func (r *mutationResolver) ModifyEpisode(ctx context.Context, id string, input *
 
 	if input.ThumbnailFileUploadName != nil {
 		dbEpisode.ThumbnailUploadName = sql.NullString{String: *input.ThumbnailFileUploadName, Valid: true}
+	}
+
+	if input.EpisodeStatus != nil {
+		if *input.EpisodeStatus == 1 && !(dbEpisode.AudioFileName.Valid && len(dbEpisode.AudioFileName.String) > 0) {
+			return nil, errors.New("please upload audio file before setting episode to public")
+		}
+		dbEpisode.EpisodeStatus = dbModels.EpisodeStatusType(*input.EpisodeStatus)
 	}
 
 	db.DB.Save(dbEpisode)
