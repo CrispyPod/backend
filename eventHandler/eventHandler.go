@@ -15,6 +15,7 @@ type EventType string
 const (
 	EventType_EpisodeVisibilityChanged EventType = "epVisibilityChanged"
 	EventType_SiteConfigChanged        EventType = "epSiteConfigChanged"
+	EventType_PublishedEpisodeChanged  EventType = "epPublishedEPChanged"
 )
 
 func RegisterEvent() {
@@ -25,6 +26,12 @@ func RegisterEvent() {
 	}), event.High)
 
 	event.On(string(EventType_SiteConfigChanged), event.ListenerFunc(func(e event.Event) error {
+		fmt.Printf("Generating RSS Feed...\n")
+		rssfeed.GenerateRSSFeed()
+		return nil
+	}), event.High)
+
+	event.On(string(EventType_PublishedEpisodeChanged), event.ListenerFunc(func(e event.Event) error {
 		fmt.Printf("Generating RSS Feed...\n")
 		rssfeed.GenerateRSSFeed()
 		return nil
@@ -53,6 +60,20 @@ func RegisterEvent() {
 		for _, h := range hooks {
 			go TriggerHook(h, siteConfig)
 		}
+		return nil
+	}), event.Normal)
+
+	event.On(string(EventType_PublishedEpisodeChanged), event.ListenerFunc(func(e event.Event) error {
+		episode := e.Get("episode").(dbModels.Episode)
+
+		var hooks []dbModels.Hook
+		if err := db.DB.Where(dbModels.Hook{Trigger: dbModels.HookTriggerType_PublishedEpisodeChanged, Enabled: true}).Find(&hooks).Error; err != nil {
+			log.Fatal(err)
+		}
+		for _, h := range hooks {
+			go TriggerHook(h, episode)
+		}
+
 		return nil
 	}), event.Normal)
 

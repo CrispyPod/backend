@@ -152,6 +152,8 @@ func (r *mutationResolver) ModifyEpisode(ctx context.Context, id string, input *
 
 	if originStatus != dbModels.EpisodeStatusType(*input.EpisodeStatus) {
 		event.MustFire(string(eventhandler.EventType_EpisodeVisibilityChanged), event.M{"episode": dbEpisode})
+	} else if originStatus == dbModels.EpisodeStatus_Published {
+		event.MustFire(string(eventhandler.EventType_PublishedEpisodeChanged), event.M{"episode": dbEpisode})
 	}
 
 	return dbEpisode.ToGQLEpisode(), nil
