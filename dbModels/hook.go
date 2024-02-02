@@ -14,6 +14,7 @@ type HookTriggerType int
 const (
 	HookTriggerType_SiteConfigChanged        HookTriggerType = 0
 	HookTriggerType_EpisodeVisibilityChanged HookTriggerType = 1
+	HookTriggerType_PublishedEpisodeChanged  HookTriggerType = 2
 )
 
 type Hook struct {

@@ -622,11 +622,16 @@ func (r *queryResolver) HookLogList(ctx context.Context, pagination model.Pagina
 	// 	return nil, errors.New("user not found")
 	// }
 
+	hID, err := uuid.Parse(hookID)
+	if err != nil {
+		return nil, errors.New("invalid hook id")
+	}
+
 	var logs []dbModels.HookLog
 	var count int64
-	err := db.DB.Scopes(helpers.Paginate(pagination.PageIndex, pagination.PerPage)).
+	err = db.DB.Scopes(helpers.Paginate(pagination.PageIndex, pagination.PerPage)).
 		Order("create_time DESC").
-		Find(&logs).Error
+		Find(&logs, dbModels.HookLog{HooksID: hID}).Error
 
 	if err != nil {
 		return nil, errors.New("logs not found")
