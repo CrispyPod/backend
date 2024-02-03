@@ -81,6 +81,10 @@ func (e *Episode) ToGQLEpisode() *model.Episode {
 		rtEpisode.AudioFileDuration = ad
 	}
 
+	if len(e.User.UserName) > 0 {
+		rtEpisode.AuthorName = &e.User.DisplayName
+	}
+
 	return &rtEpisode
 }
 

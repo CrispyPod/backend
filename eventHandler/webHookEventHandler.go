@@ -41,7 +41,7 @@ func TriggerHook(hook dbModels.Hook, data any) {
 
 	dbHookLog := dbModels.HookLog{
 		ID:         uuid.New(),
-		HooksID:    hook.ID,
+		HookID:     hook.ID,
 		Status:     dbModels.HookLogStatusType_Started,
 		CreateTime: time.Now(),
 	}

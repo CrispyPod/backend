@@ -15,7 +15,8 @@ type Episode {
   audioFileName: String
   audioFileUploadName: String
   audioFileDuration: Int
-  user: User!
+  authorName: String
+  # user: User!
 }
 
 type User {

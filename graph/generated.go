@@ -73,6 +73,7 @@ type ComplexityRoot struct {
 		AudioFileDuration   func(childComplexity int) int
 		AudioFileName       func(childComplexity int) int
 		AudioFileUploadName func(childComplexity int) int
+		AuthorName          func(childComplexity int) int
 		CreateTime          func(childComplexity int) int
 		Description         func(childComplexity int) int
 		EpisodeStatus       func(childComplexity int) int
@@ -82,7 +83,6 @@ type ComplexityRoot struct {
 		ThumbnailFileName   func(childComplexity int) int
 		ThumbnailUploadName func(childComplexity int) int
 		Title               func(childComplexity int) int
-		User                func(childComplexity int) int
 	}
 
 	EpisodeListResult struct {
@@ -325,6 +325,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Episode.AudioFileUploadName(childComplexity), true
 
+	case "Episode.authorName":
+		if e.complexity.Episode.AuthorName == nil {
+			break
+		}
+
+		return e.complexity.Episode.AuthorName(childComplexity), true
+
 	case "Episode.createTime":
 		if e.complexity.Episode.CreateTime == nil {
 			break
@@ -387,13 +394,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Episode.Title(childComplexity), true
-
-	case "Episode.user":
-		if e.complexity.Episode.User == nil {
-			break
-		}
-
-		return e.complexity.Episode.User(childComplexity), true
 
 	case "EpisodeListResult.items":
 		if e.complexity.EpisodeListResult.Items == nil {
@@ -2419,8 +2419,8 @@ func (ec *executionContext) fieldContext_Episode_audioFileDuration(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _Episode_user(ctx context.Context, field graphql.CollectedField, obj *model.Episode) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Episode_user(ctx, field)
+func (ec *executionContext) _Episode_authorName(ctx context.Context, field graphql.CollectedField, obj *model.Episode) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Episode_authorName(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2433,45 +2433,28 @@ func (ec *executionContext) _Episode_user(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.User, nil
+		return obj.AuthorName, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNUser2ᚖcrispypodᚗcomᚋcrispypodᚑbackendᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Episode_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Episode_authorName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Episode",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_User_createTime(ctx, field)
-			case "email":
-				return ec.fieldContext_User_email(ctx, field)
-			case "userName":
-				return ec.fieldContext_User_userName(ctx, field)
-			case "displayName":
-				return ec.fieldContext_User_displayName(ctx, field)
-			case "isAdmin":
-				return ec.fieldContext_User_isAdmin(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2540,8 +2523,8 @@ func (ec *executionContext) fieldContext_EpisodeListResult_items(ctx context.Con
 				return ec.fieldContext_Episode_audioFileUploadName(ctx, field)
 			case "audioFileDuration":
 				return ec.fieldContext_Episode_audioFileDuration(ctx, field)
-			case "user":
-				return ec.fieldContext_Episode_user(ctx, field)
+			case "authorName":
+				return ec.fieldContext_Episode_authorName(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Episode", field.Name)
 		},
@@ -3775,8 +3758,8 @@ func (ec *executionContext) fieldContext_Mutation_createEpisode(ctx context.Cont
 				return ec.fieldContext_Episode_audioFileUploadName(ctx, field)
 			case "audioFileDuration":
 				return ec.fieldContext_Episode_audioFileDuration(ctx, field)
-			case "user":
-				return ec.fieldContext_Episode_user(ctx, field)
+			case "authorName":
+				return ec.fieldContext_Episode_authorName(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Episode", field.Name)
 		},
@@ -3858,8 +3841,8 @@ func (ec *executionContext) fieldContext_Mutation_modifyEpisode(ctx context.Cont
 				return ec.fieldContext_Episode_audioFileUploadName(ctx, field)
 			case "audioFileDuration":
 				return ec.fieldContext_Episode_audioFileDuration(ctx, field)
-			case "user":
-				return ec.fieldContext_Episode_user(ctx, field)
+			case "authorName":
+				return ec.fieldContext_Episode_authorName(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Episode", field.Name)
 		},
@@ -4496,8 +4479,8 @@ func (ec *executionContext) fieldContext_Query_episode(ctx context.Context, fiel
 				return ec.fieldContext_Episode_audioFileUploadName(ctx, field)
 			case "audioFileDuration":
 				return ec.fieldContext_Episode_audioFileDuration(ctx, field)
-			case "user":
-				return ec.fieldContext_Episode_user(ctx, field)
+			case "authorName":
+				return ec.fieldContext_Episode_authorName(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Episode", field.Name)
 		},
@@ -8521,11 +8504,8 @@ func (ec *executionContext) _Episode(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Episode_audioFileUploadName(ctx, field, obj)
 		case "audioFileDuration":
 			out.Values[i] = ec._Episode_audioFileDuration(ctx, field, obj)
-		case "user":
-			out.Values[i] = ec._Episode_user(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
+		case "authorName":
+			out.Values[i] = ec._Episode_authorName(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

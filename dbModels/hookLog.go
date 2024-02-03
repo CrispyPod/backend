@@ -18,8 +18,8 @@ const (
 
 type HookLog struct {
 	ID             uuid.UUID `gorm:"type:uuid;primary_key"`
-	HooksID        uuid.UUID
-	Hooks          Hook
+	HookID         uuid.UUID
+	Hook           Hook
 	Status         HookLogStatusType
 	ResponseHeader sql.NullString
 	ResponseBody   sql.NullString // this should include whole http response,including header, maybe we do parse in front end
@@ -32,7 +32,7 @@ func (l *HookLog) ToGQLHookLog() *model.HookLog {
 	bodyStr := strings.Clone(l.ResponseBody.String)
 	rtHookLog := model.HookLog{
 		ID:             l.ID.String(),
-		HookID:         l.HooksID.String(),
+		HookID:         l.HookID.String(),
 		Status:         int(l.Status),
 		ResponseHeader: headerStr,
 		ResponseBody:   bodyStr,

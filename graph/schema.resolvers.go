@@ -449,6 +449,11 @@ func (r *queryResolver) Episode(ctx context.Context, id *string, namedLink *stri
 		// check if episode status was draft, if so, we will not return it while user has not logged in
 		return nil, errors.New("episode not accessable")
 	}
+
+	var episodeCreator dbModels.DbUser
+	db.DB.Model(&dbEpisode).Association("User").Find(&episodeCreator)
+	dbEpisode.User = episodeCreator
+
 	return dbEpisode.ToGQLEpisode(), nil
 }
 
@@ -633,7 +638,7 @@ func (r *queryResolver) HookLogList(ctx context.Context, pagination model.Pagina
 	var count int64
 	err = db.DB.Scopes(helpers.Paginate(pagination.PageIndex, pagination.PerPage)).
 		Order("create_time DESC").
-		Find(&logs, dbModels.HookLog{HooksID: hID}).Error
+		Find(&logs, dbModels.HookLog{HookID: hID}).Error
 
 	if err != nil {
 		return nil, errors.New("logs not found")
