@@ -36,6 +36,8 @@ type SiteConfig {
   setupComplete: Boolean!
   siteIconFile: String!
   defaultThumbnail: String!
+  headAnalytics: String
+  footerAnalytics: String
 }
 
 type DeployLog {
@@ -168,6 +170,8 @@ input SiteConfigInput {
   setupComplete: Boolean
   siteIconFile: String
   defaultThumbnail: String
+  headAnalytics: String
+  footerAnalytics: String
 }
 
 input UserInput {

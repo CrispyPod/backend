@@ -201,6 +201,20 @@ func (r *mutationResolver) ModifySiteConfig(ctx context.Context, input *model.Si
 		}
 	}
 
+	if input.HeadAnalytics != nil {
+		siteConfig.HeadAnalytics = sql.NullString{
+			String: *input.HeadAnalytics,
+			Valid:  true,
+		}
+	}
+
+	if input.FooterAnalytics != nil {
+		siteConfig.FooterAnalytics = sql.NullString{
+			String: *input.FooterAnalytics,
+			Valid:  true,
+		}
+	}
+
 	db.DB.Save(siteConfig)
 
 	event.MustFire(string(eventhandler.EventType_SiteConfigChanged), event.M{"siteConfig": siteConfig})

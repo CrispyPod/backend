@@ -164,6 +164,8 @@ type ComplexityRoot struct {
 
 	SiteConfig struct {
 		DefaultThumbnail func(childComplexity int) int
+		FooterAnalytics  func(childComplexity int) int
+		HeadAnalytics    func(childComplexity int) int
 		ID               func(childComplexity int) int
 		SetupComplete    func(childComplexity int) int
 		SiteDescription  func(childComplexity int) int
@@ -846,6 +848,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SiteConfig.DefaultThumbnail(childComplexity), true
+
+	case "SiteConfig.footerAnalytics":
+		if e.complexity.SiteConfig.FooterAnalytics == nil {
+			break
+		}
+
+		return e.complexity.SiteConfig.FooterAnalytics(childComplexity), true
+
+	case "SiteConfig.headAnalytics":
+		if e.complexity.SiteConfig.HeadAnalytics == nil {
+			break
+		}
+
+		return e.complexity.SiteConfig.HeadAnalytics(childComplexity), true
 
 	case "SiteConfig.id":
 		if e.complexity.SiteConfig.ID == nil {
@@ -3914,6 +3930,10 @@ func (ec *executionContext) fieldContext_Mutation_modifySiteConfig(ctx context.C
 				return ec.fieldContext_SiteConfig_siteIconFile(ctx, field)
 			case "defaultThumbnail":
 				return ec.fieldContext_SiteConfig_defaultThumbnail(ctx, field)
+			case "headAnalytics":
+				return ec.fieldContext_SiteConfig_headAnalytics(ctx, field)
+			case "footerAnalytics":
+				return ec.fieldContext_SiteConfig_footerAnalytics(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SiteConfig", field.Name)
 		},
@@ -4732,6 +4752,10 @@ func (ec *executionContext) fieldContext_Query_siteConfig(ctx context.Context, f
 				return ec.fieldContext_SiteConfig_siteIconFile(ctx, field)
 			case "defaultThumbnail":
 				return ec.fieldContext_SiteConfig_defaultThumbnail(ctx, field)
+			case "headAnalytics":
+				return ec.fieldContext_SiteConfig_headAnalytics(ctx, field)
+			case "footerAnalytics":
+				return ec.fieldContext_SiteConfig_footerAnalytics(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SiteConfig", field.Name)
 		},
@@ -5673,6 +5697,88 @@ func (ec *executionContext) _SiteConfig_defaultThumbnail(ctx context.Context, fi
 }
 
 func (ec *executionContext) fieldContext_SiteConfig_defaultThumbnail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SiteConfig",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SiteConfig_headAnalytics(ctx context.Context, field graphql.CollectedField, obj *model.SiteConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SiteConfig_headAnalytics(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HeadAnalytics, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SiteConfig_headAnalytics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SiteConfig",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SiteConfig_footerAnalytics(ctx context.Context, field graphql.CollectedField, obj *model.SiteConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SiteConfig_footerAnalytics(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FooterAnalytics, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SiteConfig_footerAnalytics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SiteConfig",
 		Field:      field,
@@ -8160,7 +8266,7 @@ func (ec *executionContext) unmarshalInputSiteConfigInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"siteName", "siteDescription", "siteUrl", "setupComplete", "siteIconFile", "defaultThumbnail"}
+	fieldsInOrder := [...]string{"siteName", "siteDescription", "siteUrl", "setupComplete", "siteIconFile", "defaultThumbnail", "headAnalytics", "footerAnalytics"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8209,6 +8315,20 @@ func (ec *executionContext) unmarshalInputSiteConfigInput(ctx context.Context, o
 				return it, err
 			}
 			it.DefaultThumbnail = data
+		case "headAnalytics":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("headAnalytics"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HeadAnalytics = data
+		case "footerAnalytics":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("footerAnalytics"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FooterAnalytics = data
 		}
 	}
 
@@ -9400,6 +9520,10 @@ func (ec *executionContext) _SiteConfig(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "headAnalytics":
+			out.Values[i] = ec._SiteConfig_headAnalytics(ctx, field, obj)
+		case "footerAnalytics":
+			out.Values[i] = ec._SiteConfig_footerAnalytics(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
