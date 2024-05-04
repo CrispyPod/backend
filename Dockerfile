@@ -2,6 +2,7 @@ FROM golang:1.21-alpine
 WORKDIR /src
 COPY main.go go.mod go.sum  ./
 COPY migrations ./migrations
+COPY helpers ./helpers
 RUN go build -o /bin/crispypod
 
 

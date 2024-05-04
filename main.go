@@ -2,14 +2,18 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
+	"slices"
 	"strings"
 
+	"github.com/crispypod/backend-pb/helpers"
 	_ "github.com/crispypod/backend-pb/migrations"
+	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
+	"github.com/pocketbase/pocketbase/ui"
 )
 
 func main() {
@@ -24,9 +28,20 @@ func main() {
 		Automigrate: isGoRun,
 	})
 
-	// serves static files from the provided public dir (if exists)
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
+
+		if helpers.LoadedEnv.PBAdminEnabled {
+			e.Router.GET("/_/", func(c echo.Context) error {
+				if slices.Contains(helpers.LoadedEnv.PBAdminAcceptHosts, c.Request().Host) {
+					return echo.StaticDirectoryHandler(ui.DistDirFS, false)(c)
+				}
+
+				return c.JSON(http.StatusOK, map[string]any{"error": "pocketbase web ui disabled"})
+			})
+		}
+
+		// // serves static files from the provided public dir (if exists)
+		// e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
 		return nil
 	})
 
