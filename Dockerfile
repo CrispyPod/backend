@@ -3,6 +3,7 @@ WORKDIR /src
 COPY main.go go.mod go.sum  ./
 COPY migrations ./migrations
 COPY helpers ./helpers
+COPY rssFeed ./rssFeed
 RUN go build -o /bin/crispypod
 
 
