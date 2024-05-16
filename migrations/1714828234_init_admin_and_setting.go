@@ -19,7 +19,7 @@ func init() {
 		}
 
 		admin := &models.Admin{}
-		admin.Email = "admin@crispypod.com"
+		admin.Email = "pb@crispy.pod"
 		admin.SetPassword("crispy.pod")
 
 		return dao.SaveAdmin(admin)

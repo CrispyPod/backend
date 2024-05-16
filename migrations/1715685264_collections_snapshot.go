@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "ozvy234ycba3yqt",
 				"created": "2024-05-04 13:19:32.332Z",
-				"updated": "2024-05-14 12:33:40.334Z",
+				"updated": "2024-05-16 05:25:32.783Z",
 				"name": "episodes",
 				"type": "base",
 				"system": false,
@@ -161,7 +161,7 @@ func init() {
 			{
 				"id": "3fm95ekne0o0spw",
 				"created": "2024-05-14 11:11:24.670Z",
-				"updated": "2024-05-14 12:33:40.335Z",
+				"updated": "2024-05-16 05:33:34.536Z",
 				"name": "site_config",
 				"type": "base",
 				"system": false,
@@ -269,20 +269,39 @@ func init() {
 							"max": null,
 							"pattern": ""
 						}
+					},
+					{
+						"system": false,
+						"id": "nrg2fnqa",
+						"name": "setup_step",
+						"type": "select",
+						"required": true,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"maxSelect": 1,
+							"values": [
+								"welcome",
+								"changepassword",
+								"changesitesetting",
+								"finish",
+								"done"
+							]
+						}
 					}
 				],
 				"indexes": [],
 				"listRule": "",
 				"viewRule": "",
 				"createRule": null,
-				"updateRule": null,
+				"updateRule": "@request.auth.verified=true",
 				"deleteRule": null,
 				"options": {}
 			},
 			{
 				"id": "_pb_users_auth_",
-				"created": "2024-05-14 12:06:15.889Z",
-				"updated": "2024-05-14 12:33:40.335Z",
+				"created": "2024-05-16 05:25:31.722Z",
+				"updated": "2024-05-16 05:25:32.784Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,

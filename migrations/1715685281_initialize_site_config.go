@@ -21,6 +21,7 @@ func init() {
 		siteConfigRecord.Set("site_name", "Crispy Pod")
 		siteConfigRecord.Set("site_description", "Awesome podcast!")
 		siteConfigRecord.Set("site_url", "https://crispypod.com")
+		siteConfigRecord.Set("setup_step", "welcome")
 
 		return dao.SaveRecord(siteConfigRecord)
 	}, func(db dbx.Builder) error {

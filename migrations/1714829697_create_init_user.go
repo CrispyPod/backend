@@ -13,8 +13,8 @@ func init() {
 		usersCollection, _ := dao.FindCollectionByNameOrId("users")
 
 		userRecord := models.NewRecord(usersCollection)
-		userRecord.SetEmail("user@crispy.pod")
-		userRecord.SetUsername("defaultuser")
+		userRecord.SetEmail("admin@crispy.pod")
+		userRecord.SetUsername("admin")
 		userRecord.SetVerified(true)
 		userRecord.SetPassword("password")
 
