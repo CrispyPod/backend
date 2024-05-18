@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "ozvy234ycba3yqt",
 				"created": "2024-05-04 13:19:32.332Z",
-				"updated": "2024-05-16 05:25:32.783Z",
+				"updated": "2024-05-16 09:13:57.518Z",
 				"name": "episodes",
 				"type": "base",
 				"system": false,
@@ -110,7 +110,7 @@ func init() {
 					{
 						"system": false,
 						"id": "kjmltahq",
-						"name": "audiofile",
+						"name": "audio_file",
 						"type": "file",
 						"required": false,
 						"presentable": false,
@@ -151,11 +151,11 @@ func init() {
 					}
 				],
 				"indexes": [],
-				"listRule": "(@request.auth.id=\"\" && status=\"published\" ) || (@request.auth.id != \"\")",
-				"viewRule": "(@request.auth.id=\"\" && status=\"published\" ) || (@request.auth.id != \"\")",
-				"createRule": "@request.auth.id != \"\"",
-				"updateRule": "@request.auth.id != \"\"",
-				"deleteRule": "@request.auth.id != \"\"",
+				"listRule": "(@request.auth.id=\"\" && status=\"published\" ) || (@request.auth.verified=true)",
+				"viewRule": "(@request.auth.id=\"\" && status=\"published\" ) || (@request.auth.verified=true)",
+				"createRule": "@request.auth.verified=true",
+				"updateRule": "@request.auth.verified=true",
+				"deleteRule": "@request.auth.verified=true",
 				"options": {}
 			},
 			{
@@ -300,8 +300,8 @@ func init() {
 			},
 			{
 				"id": "_pb_users_auth_",
-				"created": "2024-05-16 05:25:31.722Z",
-				"updated": "2024-05-16 05:25:32.784Z",
+				"created": "2024-05-16 05:35:08.644Z",
+				"updated": "2024-05-16 05:35:09.723Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,
