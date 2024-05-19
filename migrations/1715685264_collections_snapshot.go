@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "ozvy234ycba3yqt",
 				"created": "2024-05-04 13:19:32.332Z",
-				"updated": "2024-05-16 09:13:57.518Z",
+				"updated": "2024-05-19 03:07:16.611Z",
 				"name": "episodes",
 				"type": "base",
 				"system": false,
@@ -138,16 +138,6 @@ func init() {
 							"maxSelect": 1,
 							"displayFields": null
 						}
-					},
-					{
-						"system": false,
-						"id": "fn7vstqh",
-						"name": "published",
-						"type": "bool",
-						"required": false,
-						"presentable": false,
-						"unique": false,
-						"options": {}
 					}
 				],
 				"indexes": [],
@@ -300,8 +290,8 @@ func init() {
 			},
 			{
 				"id": "_pb_users_auth_",
-				"created": "2024-05-16 05:35:08.644Z",
-				"updated": "2024-05-16 05:35:09.723Z",
+				"created": "2024-05-18 10:10:38.063Z",
+				"updated": "2024-05-18 10:10:39.098Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,
