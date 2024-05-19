@@ -31,11 +31,24 @@ func main() {
 		Automigrate: isGoRun,
 	})
 
+	// add rebuild rss.xml hook
+	app.OnRecordAfterUpdateRequest("episodes", "site_config").Add(func(e *core.RecordUpdateEvent) error {
+		rssfeed.GenerateRssFeed(app)
+		return nil
+	})
+	// add rebuild rss.xml hook
+	app.OnRecordAfterDeleteRequest("episodes").Add(func(e *core.RecordDeleteEvent) error {
+		rssfeed.GenerateRssFeed(app)
+		return nil
+	})
+
+	// generate slog for episodes
 	app.OnRecordAfterCreateRequest("episodes").Add(func(e *core.RecordCreateEvent) error {
 		helpers.EpisodeGenerateSlug(e.Record, app)
 		return nil
 	})
 
+	// generate slog for episodes
 	app.OnRecordAfterUpdateRequest("episodes").Add(func(e *core.RecordUpdateEvent) error {
 		helpers.EpisodeGenerateSlug(e.Record, app)
 		return nil

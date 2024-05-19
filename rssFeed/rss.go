@@ -18,7 +18,7 @@ func GenerateRssFeed(app *pocketbase.PocketBase) error {
 		Created:     time.Now(),
 	}
 
-	episodes, err := app.Dao().FindRecordsByFilter("episodes", "published=true", "-updated", 0, 0)
+	episodes, err := app.Dao().FindRecordsByFilter("episodes", "status=\"published\"", "-updated", 0, 0)
 	if err != nil {
 		return err
 	}
