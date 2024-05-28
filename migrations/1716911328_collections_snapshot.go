@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "ozvy234ycba3yqt",
 				"created": "2024-05-04 13:19:32.332Z",
-				"updated": "2024-05-19 03:12:14.784Z",
+				"updated": "2024-05-28 09:58:44.393Z",
 				"name": "episodes",
 				"type": "base",
 				"system": false,
@@ -151,7 +151,7 @@ func init() {
 			{
 				"id": "3fm95ekne0o0spw",
 				"created": "2024-05-14 11:11:24.670Z",
-				"updated": "2024-05-16 05:33:34.536Z",
+				"updated": "2024-05-28 09:58:44.394Z",
 				"name": "site_config",
 				"type": "base",
 				"system": false,
@@ -291,7 +291,7 @@ func init() {
 			{
 				"id": "_pb_users_auth_",
 				"created": "2024-05-19 03:12:13.739Z",
-				"updated": "2024-05-19 03:12:14.785Z",
+				"updated": "2024-05-28 09:58:44.394Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,
@@ -354,7 +354,7 @@ func init() {
 			{
 				"id": "j76v1fd2zedxz9d",
 				"created": "2024-05-28 00:13:05.433Z",
-				"updated": "2024-05-28 05:04:52.756Z",
+				"updated": "2024-05-28 10:02:33.916Z",
 				"name": "deploy_logs",
 				"type": "base",
 				"system": false,
@@ -362,7 +362,21 @@ func init() {
 					{
 						"system": false,
 						"id": "aotcciow",
-						"name": "log",
+						"name": "build_log",
+						"type": "text",
+						"required": false,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"min": null,
+							"max": null,
+							"pattern": ""
+						}
+					},
+					{
+						"system": false,
+						"id": "pslhkflh",
+						"name": "deploy_log",
 						"type": "text",
 						"required": false,
 						"presentable": false,
@@ -384,6 +398,7 @@ func init() {
 						"options": {
 							"maxSelect": 1,
 							"values": [
+								"building",
 								"deploying",
 								"finished",
 								"failed"
