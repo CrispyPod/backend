@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine
+FROM golang:1.23-alpine
 WORKDIR /src
 COPY main.go go.mod go.sum  ./
 COPY migrations ./migrations
